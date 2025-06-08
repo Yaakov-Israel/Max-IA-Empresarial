@@ -118,6 +118,8 @@ class MaxAgente:
         if logo_base64: st.markdown(f"<div style='text-align: center;'><img src='data:image/png;base64,{logo_base64}' width='200'></div>", unsafe_allow_html=True)
         st.markdown("<div style='text-align: center;'><p style='font-size: 1.2em;'>Olá! Eu sou o <strong>Max</strong>, seu assistente de IA para impulsionar o sucesso da sua empresa.</p></div>", unsafe_allow_html=True)
 
+   # DENTRO DA CLASSE MaxAgente, SUBSTITUA A FUNÇÃO INTEIRA POR ESTA VERSÃO:
+
     def exibir_max_marketing_total(self):
         st.header("🚀 MaxMarketing Total"); st.caption("Seu copiloto para criar posts, campanhas completas e muito mais!")
         st.markdown("---")
@@ -246,51 +248,62 @@ class MaxAgente:
                     publico_campanha = st.text_area("3. Público-alvo (dores e desejos)")
                     produto_servico_campanha = st.text_area("4. Produto/Serviço em foco")
                     duracao_campanha = st.selectbox("5. Duração:", ("1 Semana", "15 Dias", "1 Mês", "Trimestre"))
-                    canais_campanha = st.multiselect("6. Canais:", ["Instagram", "Facebook", "E-mail Marketing", "Google Ads", "Blog"])
+                    
+                    # <<< ALTERAÇÕES AQUI >>>
+                    novos_canais = [
+                        "Instagram", "Facebook", "E-mail Marketing", "Google ADS", 
+                        "Vídeo YouTube", "Vídeo TikTok", "Reels Facebook", "Reels Instagram", "Blog"
+                    ]
+                    canais_campanha = st.multiselect(
+                        "6. Canais:", 
+                        options=novos_canais,
+                        placeholder="Escolha as opções desejadas"
+                    )
+                    # <<< FIM DAS ALTERAÇÕES >>>
+
                     info_adicional_campanha = st.text_area("7. Informações adicionais ou ofertas")
                     if st.form_submit_button("🚀 Gerar Plano de Campanha"):
                         if not all([nome_campanha, objetivo_campanha, publico_campanha, produto_servico_campanha]): st.warning("Preencha os 4 primeiros campos.")
                         else:
                             with st.spinner("🧠 Max IA está pensando como um estrategista..."):
-                                # Este prompt é um exemplo simplificado, o ideal é usar um template mais robusto
                                 prompt_campanha = f"""
-                                **Instrução Mestra:** Você é o MaxMarketing Total, um Diretor de Marketing Estratégico especialista em PMEs brasileiras. Sua tarefa é criar um plano de campanha de marketing completo, multicanal e coeso, com base no briefing do usuário.
-                                **Tarefa:** Elabore um plano detalhado, dividindo a resposta em seções claras e bem definidas usando os seguintes marcadores EXATOS: `[ESTRATÉGIA DA CAMPANHA]`, `[CONTEÚDO PARA REDES SOCIAIS]`, `[CONTEÚDO PARA EMAIL MARKETING]` e `[IDEIAS PARA ANÚNCIOS PAGOS]`.
-                                **[BRIEFING DO USUÁRIO]**
-                                - Nome da Campanha: {nome_campanha}
-                                - Principal Objetivo: {objetivo_campanha}
-                                - Público-Alvo Detalhado: {publico_campanha}
-                                - Produto/Serviço em Foco: {produto_servico_campanha}
-                                - Duração da Campanha: {duracao_campanha}
-                                - Canais Selecionados: {', '.join(canais_campanha)}
-                                - Informações Adicionais: {info_adicional_campanha}
-                                --- INÍCIO DO PLANO DA CAMPANHA ---
-                                [ESTRATÉGIA DA CAMPANHA]
-                                * Conceito Central: (Crie um conceito criativo, o "Big Idea" da campanha em uma frase).
-                                * Mensagem Principal: (Qual a mensagem chave que será repetida em todos os canais?).
-                                * Linha do Tempo Sugerida: (Divida a duração da campanha em fases. Ex: Semana 1: Teaser. Semana 2: Engajamento...).
-                                * KPIs para Monitoramento: (Sugira 2-3 métricas para medir o sucesso. Ex: Taxa de Cliques, Custo por Lead).
-                                [CONTEÚDO PARA REDES SOCIAIS]
-                                (Crie 3 posts diferentes para o Instagram/Facebook que sigam a linha do tempo da campanha. Para cada um, forneça Título, Texto, Sugestão de Imagem e Hashtags).
-                                * Post 1 (Fase de Teaser):
-                                    * Título: ...
-                                * Post 2 (Fase de Engajamento):
-                                    * Título: ...
-                                * Post 3 (Fase de Oferta/CTA):
-                                    * Título: ...
-                                [CONTEÚDO PARA EMAIL MARKETING]
-                                (Crie uma sequência de 2 e-mails. Forneça Assunto e Corpo para cada um).
-                                * E-mail 1 (Apresentação):
-                                    * Assunto: ...
-                                * E-mail 2 (Lembrete/Oferta):
-                                    * Assunto: ...
-                                [IDEIAS PARA ANÚNCIOS PAGOS]
-                                (Crie 2 sugestões de texto para anúncios no Google Ads ou Meta Ads).
-                                * Anúncio 1 (Foco em Dor/Solução):
-                                    * Título 1 (30 chars): ...
-                                * Anúncio 2 (Foco em Oferta/Benefício):
-                                    * Título 1 (30 chars): ...
-                                """
+**Instrução Mestra:** Você é o MaxMarketing Total, um Diretor de Marketing Estratégico especialista em PMEs brasileiras. Sua tarefa é criar um plano de campanha de marketing completo, multicanal e coeso, com base no briefing do usuário.
+**Tarefa:** Elabore um plano detalhado, dividindo a resposta em seções claras e bem definidas usando os seguintes marcadores EXATOS: `[ESTRATÉGIA DA CAMPANHA]`, `[CONTEÚDO PARA REDES SOCIAIS]`, `[CONTEÚDO PARA EMAIL MARKETING]` e `[IDEIAS PARA ANÚNCIOS PAGOS]`.
+**[BRIEFING DO USUÁRIO]**
+- Nome da Campanha: {nome_campanha}
+- Principal Objetivo: {objetivo_campanha}
+- Público-Alvo Detalhado: {publico_campanha}
+- Produto/Serviço em Foco: {produto_servico_campanha}
+- Duração da Campanha: {duracao_campanha}
+- Canais Selecionados: {', '.join(canais_campanha)}
+- Informações Adicionais: {info_adicional_campanha}
+--- INÍCIO DO PLANO DA CAMPANHA ---
+[ESTRATÉGIA DA CAMPANHA]
+* Conceito Central: (Crie um conceito criativo, o "Big Idea" da campanha em uma frase).
+* Mensagem Principal: (Qual a mensagem chave que será repetida em todos os canais?).
+* Linha do Tempo Sugerida: (Divida a duração da campanha em fases. Ex: Semana 1: Teaser. Semana 2: Engajamento...).
+* KPIs para Monitoramento: (Sugira 2-3 métricas para medir o sucesso. Ex: Taxa de Cliques, Custo por Lead).
+[CONTEÚDO PARA REDES SOCIAIS]
+(Crie 3 posts diferentes para o Instagram/Facebook que sigam a linha do tempo da campanha. Para cada um, forneça Título, Texto, Sugestão de Imagem e Hashtags).
+* Post 1 (Fase de Teaser):
+    * Título: ...
+* Post 2 (Fase de Engajamento):
+    * Título: ...
+* Post 3 (Fase de Oferta/CTA):
+    * Título: ...
+[CONTEÚDO PARA EMAIL MARKETING]
+(Crie uma sequência de 2 e-mails. Forneça Assunto e Corpo para cada um).
+* E-mail 1 (Apresentação):
+    * Assunto: ...
+* E-mail 2 (Lembrete/Oferta):
+    * Assunto: ...
+[IDEIAS PARA ANÚNCIOS PAGOS]
+(Crie 2 sugestões de texto para anúncios no Google Ads ou Meta Ads).
+* Anúncio 1 (Foco em Dor/Solução):
+    * Título 1 (30 chars): ...
+* Anúncio 2 (Foco em Oferta/Benefício):
+    * Título 1 (30 chars): ...
+"""
                                 try:
                                     if self.llm:
                                         resposta_ia = self.llm.invoke(prompt_campanha)
