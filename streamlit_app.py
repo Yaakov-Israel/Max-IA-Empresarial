@@ -118,8 +118,7 @@ class MaxAgente:
         if logo_base64: st.markdown(f"<div style='text-align: center;'><img src='data:image/png;base64,{logo_base64}' width='200'></div>", unsafe_allow_html=True)
         st.markdown("<div style='text-align: center;'><p style='font-size: 1.2em;'>Olá! Eu sou o <strong>Max</strong>, seu assistente de IA para impulsionar o sucesso da sua empresa.</p></div>", unsafe_allow_html=True)
 
-# DENTRO DA CLASSE MaxAgente, SUBSTITUA A FUNÇÃO INTEIRA POR ESTA VERSÃO:
-        def exibir_max_marketing_total(self):
+    def exibir_max_marketing_total(self):
         st.header("🚀 MaxMarketing Total"); st.caption("Seu copiloto para criar posts, campanhas completas e muito mais!")
         st.markdown("---")
 
@@ -129,11 +128,9 @@ class MaxAgente:
         session_key_campaign = f"mkt_campaign_{APP_KEY_SUFFIX}"
         if session_key_campaign not in st.session_state: st.session_state[session_key_campaign] = None
 
-        # --- ALTERAÇÃO DE LABEL ---
         opcoes_marketing = ["Criar Post", "Criar campanha completa"]
         acao_selecionada = st.radio("Qual ferramenta do MaxMarketing vamos usar hoje?", opcoes_marketing, key=f"mkt_radio_{APP_KEY_SUFFIX}")
 
-        # --- LÓGICA ATUALIZADA PARA "CRIAR POST" ---
         if acao_selecionada == "Criar Post":
             st.session_state[session_key_campaign] = None
             if st.session_state[session_key_post]:
@@ -154,8 +151,6 @@ class MaxAgente:
             else:
                 st.subheader("📝 Briefing do Conteúdo")
                 with st.form(key=f"mkt_form_post_{APP_KEY_SUFFIX}"):
-                    
-                    # --- NOVO MENU SUSPENSO ---
                     formatos_disponiveis = [
                         "Instagram Post (Feed)", "Instagram Stories", "Instagram Reels (Roteiro)",
                         "Facebook Post", "Facebook Stories",
@@ -163,18 +158,14 @@ class MaxAgente:
                         "Roteiro de Vídeo YouTube", "Roteiro para TikTok", "Post para X (Twitter)"
                     ]
                     formato_selecionado = st.selectbox("1. Primeiro, escolha o formato do conteúdo:", formatos_disponiveis)
-                    
                     objetivo = st.text_area("2. Qual o objetivo deste conteúdo?")
                     publico = st.text_input("3. Quem você quer alcançar?")
                     produto_servico = st.text_area("4. Qual produto ou serviço principal está promovendo?")
                     info_adicional = st.text_area("5. Alguma informação adicional, oferta ou CTA (Chamada para Ação)?")
-                    
                     if st.form_submit_button("💡 Gerar Conteúdo com Max IA!"):
                         if not objetivo: st.warning("O objetivo é essencial.")
                         else:
                             with st.spinner(f"🤖 Max IA está pensando como um especialista em {formato_selecionado}..."):
-                                
-                                # --- LÓGICA DE PROMPT DINÂMICO ---
                                 instrucao_base = f"""
                                 **Contexto do Negócio:**
                                 - **Objetivo:** {objetivo}
@@ -182,7 +173,6 @@ class MaxAgente:
                                 - **Produto/Serviço:** {produto_servico}
                                 - **Informações Adicionais/CTA:** {info_adicional}
                                 """
-
                                 if "Instagram" in formato_selecionado or "Facebook" in formato_selecionado:
                                     especialista = "um especialista em social media para Instagram e Facebook."
                                     tarefa = f"Crie o conteúdo para um(a) **{formato_selecionado}**. O texto deve ser engajador, com quebras de linha e emojis. Para Reels ou Stories, foque em um roteiro rápido e visual. Finalize com 3-5 hashtags relevantes."
@@ -201,9 +191,7 @@ class MaxAgente:
                                 else: # X (Twitter)
                                     especialista = "um especialista em comunicação rápida e de impacto para o X (Twitter)."
                                     tarefa = "Crie um post curto, com no máximo 280 caracteres. A mensagem deve ser direta e pode incluir 1 ou 2 hashtags relevantes."
-
                                 prompt_final = f"**Instrução:** Você é {especialista}\n\n**Tarefa:** {tarefa}\n\n{instrucao_base}"
-
                                 try:
                                     if self.llm: 
                                         resposta = self.llm.invoke(prompt_final)
@@ -212,9 +200,7 @@ class MaxAgente:
                                     else: st.error("LLM não disponível.")
                                 except Exception as e: st.error(f"Erro na IA: {e}")
         
-        # O bloco de "Criar campanha completa" permanece o mesmo, sem alterações.
         elif acao_selecionada == "Criar campanha completa":
-            # ... (Toda a lógica da campanha que já implementamos)
             st.session_state[session_key_post] = None
             if st.session_state[session_key_campaign]:
                 st.subheader("🎉 Plano de Campanha Gerado pelo Max IA!")
@@ -266,73 +252,45 @@ class MaxAgente:
                         if not all([nome_campanha, objetivo_campanha, publico_campanha, produto_servico_campanha]): st.warning("Preencha os 4 primeiros campos.")
                         else:
                             with st.spinner("🧠 Max IA está pensando como um estrategista..."):
+                                # Este prompt é um exemplo simplificado, o ideal é usar um template mais robusto
                                 prompt_campanha = f"""
-**Instrução Mestra:** ...
-... (O prompt gigante da campanha que já criamos) ...
-**Descrição (90 chars):** ...
-"""
-                                try:
-                                    if self.llm:
-                                        # Este prompt está incompleto, precisa ser o prompt grande que definimos antes
-                                        # Apenas como placeholder, a lógica real deve ser preenchida
-                                        st.session_state[session_key_campaign] = "Placeholder para a campanha gerada"
-                                        st.rerun()
-                                    else: st.error("LLM não disponível.")
-                                except Exception as e: st.error(f"Erro na IA: {e}")
-        elif acao_selecionada == "Criar campanha completa":
-            st.session_state[session_key_post] = None
-            if st.session_state[session_key_campaign]:
-                st.subheader("🎉 Plano de Campanha Gerado pelo Max IA!")
-                resposta_completa = st.session_state[session_key_campaign]
-                st.markdown("---")
-                with st.expander("📥 Baixar Plano de Campanha Completo"):
-                    col1, col2 = st.columns([0.7, 0.3])
-                    with col1: formato_campanha = st.selectbox("Escolha o formato:", ("txt", "docx", "pdf"), key="dl_fmt_campaign")
-                    with col2:
-                        st.write(""); st.write("")
-                        try:
-                            arquivo_bytes_campanha = gerar_arquivo_download(resposta_completa, formato_campanha)
-                            if arquivo_bytes_campanha: st.download_button(label=f"Baixar como .{formato_campanha}",data=arquivo_bytes_campanha,file_name=f"plano_de_campanha_max_ia.{formato_campanha}",use_container_width=True)
-                        except Exception as e: st.error(f"Erro no download: {e}")
-                st.markdown("---")
-                def extrair_secao(texto_completo, secao_inicio, todas_secoes):
-                    try:
-                        idx_inicio = texto_completo.index(secao_inicio) + len(secao_inicio); idx_fim = len(texto_completo)
-                        secao_atual_index = todas_secoes.index(secao_inicio)
-                        if secao_atual_index + 1 < len(todas_secoes):
-                            proxima_secao = todas_secoes[secao_atual_index + 1]
-                            if proxima_secao in texto_completo: idx_fim = texto_completo.index(proxima_secao)
-                        return texto_completo[idx_inicio:idx_fim].strip()
-                    except ValueError: return f"A seção '{secao_inicio}' não foi encontrada na resposta."
-                secoes = ["[ESTRATÉGIA DA CAMPANHA]", "[CONTEÚDO PARA REDES SOCIAIS]", "[CONTEÚDO PARA EMAIL MARKETING]", "[IDEIAS PARA ANÚNCIOS PAGOS]"]
-                conteudo_estrategia = extrair_secao(resposta_completa, secoes[0], secoes)
-                conteudo_redes = extrair_secao(resposta_completa, secoes[1], secoes)
-                conteudo_email = extrair_secao(resposta_completa, secoes[2], secoes)
-                conteudo_anuncios = extrair_secao(resposta_completa, secoes[3], secoes)
-                tab1, tab2, tab3, tab4 = st.tabs(["🧭 Estratégia", "📱 Redes Sociais", "✉️ E-mail", "💰 Anúncios"])
-                with tab1: st.markdown(conteudo_estrategia)
-                with tab2: st.markdown(conteudo_redes)
-                with tab3: st.markdown(conteudo_email)
-                with tab4: st.markdown(conteudo_anuncios)
-                st.markdown("---")
-                if st.button("✨ Criar Nova Campanha"): st.session_state[session_key_campaign] = None; st.rerun()
-            else:
-                 st.subheader("📝 Briefing da Campanha Estratégica")
-                 with st.form(key=f"mkt_form_campaign_{APP_KEY_SUFFIX}"):
-                    st.write("Preencha os detalhes abaixo para o Max IA construir seu plano de campanha.")
-                    nome_campanha = st.text_input("1. Nome da Campanha")
-                    objetivo_campanha = st.text_area("2. Principal Objetivo")
-                    publico_campanha = st.text_area("3. Público-alvo (dores e desejos)")
-                    produto_servico_campanha = st.text_area("4. Produto/Serviço em foco")
-                    duracao_campanha = st.selectbox("5. Duração:", ("1 Semana", "15 Dias", "1 Mês", "Trimestre"))
-                    canais_campanha = st.multiselect("6. Canais:", ["Instagram", "Facebook", "E-mail Marketing", "Google Ads", "Blog"])
-                    info_adicional_campanha = st.text_area("7. Informações adicionais ou ofertas")
-                    if st.form_submit_button("🚀 Gerar Plano de Campanha"):
-                        if not all([nome_campanha, objetivo_campanha, publico_campanha, produto_servico_campanha]): st.warning("Preencha os 4 primeiros campos.")
-                        else:
-                            with st.spinner("🧠 Max IA está pensando como um estrategista..."):
-                                mkt_cfg = PROMPTS_CONFIG['agentes']['max_marketing']['tarefas']['criar_post'] # Reutilizando prompt de post por enquanto
-                                prompt_campanha = f"Com base neste briefing: {nome_campanha}, {objetivo_campanha}, {publico_campanha}, {produto_servico_campanha}, {duracao_campanha}, {canais_campanha}, {info_adicional_campanha}, crie um plano de campanha detalhado."
+                                **Instrução Mestra:** Você é o MaxMarketing Total, um Diretor de Marketing Estratégico especialista em PMEs brasileiras. Sua tarefa é criar um plano de campanha de marketing completo, multicanal e coeso, com base no briefing do usuário.
+                                **Tarefa:** Elabore um plano detalhado, dividindo a resposta em seções claras e bem definidas usando os seguintes marcadores EXATOS: `[ESTRATÉGIA DA CAMPANHA]`, `[CONTEÚDO PARA REDES SOCIAIS]`, `[CONTEÚDO PARA EMAIL MARKETING]` e `[IDEIAS PARA ANÚNCIOS PAGOS]`.
+                                **[BRIEFING DO USUÁRIO]**
+                                - Nome da Campanha: {nome_campanha}
+                                - Principal Objetivo: {objetivo_campanha}
+                                - Público-Alvo Detalhado: {publico_campanha}
+                                - Produto/Serviço em Foco: {produto_servico_campanha}
+                                - Duração da Campanha: {duracao_campanha}
+                                - Canais Selecionados: {', '.join(canais_campanha)}
+                                - Informações Adicionais: {info_adicional_campanha}
+                                --- INÍCIO DO PLANO DA CAMPANHA ---
+                                [ESTRATÉGIA DA CAMPANHA]
+                                * Conceito Central: (Crie um conceito criativo, o "Big Idea" da campanha em uma frase).
+                                * Mensagem Principal: (Qual a mensagem chave que será repetida em todos os canais?).
+                                * Linha do Tempo Sugerida: (Divida a duração da campanha em fases. Ex: Semana 1: Teaser. Semana 2: Engajamento...).
+                                * KPIs para Monitoramento: (Sugira 2-3 métricas para medir o sucesso. Ex: Taxa de Cliques, Custo por Lead).
+                                [CONTEÚDO PARA REDES SOCIAIS]
+                                (Crie 3 posts diferentes para o Instagram/Facebook que sigam a linha do tempo da campanha. Para cada um, forneça Título, Texto, Sugestão de Imagem e Hashtags).
+                                * Post 1 (Fase de Teaser):
+                                    * Título: ...
+                                * Post 2 (Fase de Engajamento):
+                                    * Título: ...
+                                * Post 3 (Fase de Oferta/CTA):
+                                    * Título: ...
+                                [CONTEÚDO PARA EMAIL MARKETING]
+                                (Crie uma sequência de 2 e-mails. Forneça Assunto e Corpo para cada um).
+                                * E-mail 1 (Apresentação):
+                                    * Assunto: ...
+                                * E-mail 2 (Lembrete/Oferta):
+                                    * Assunto: ...
+                                [IDEIAS PARA ANÚNCIOS PAGOS]
+                                (Crie 2 sugestões de texto para anúncios no Google Ads ou Meta Ads).
+                                * Anúncio 1 (Foco em Dor/Solução):
+                                    * Título 1 (30 chars): ...
+                                * Anúncio 2 (Foco em Oferta/Benefício):
+                                    * Título 1 (30 chars): ...
+                                """
                                 try:
                                     if self.llm:
                                         resposta_ia = self.llm.invoke(prompt_campanha)
@@ -340,84 +298,40 @@ class MaxAgente:
                                     else: st.error("LLM não disponível.")
                                 except Exception as e: st.error(f"Erro na IA: {e}")
 
-   # DENTRO DA CLASSE MaxAgente, SUBSTITUA O MÉTODO INTEIRO POR ESTE:
-
     def exibir_max_construtor(self):
-        st.header("🏗️ Max Construtor de Landing Pages")
-        st.caption("Vamos criar juntos uma página de vendas de alta conversão. Responda a entrevista abaixo.")
+        st.header("🏗️ Max Construtor de Landing Pages"); st.caption("Vamos criar juntos uma página de vendas de alta conversão. Responda a entrevista abaixo.")
         st.markdown("---")
-
-        # --- Gerenciamento de Estado ---
         if 'genesis_step' not in st.session_state: st.session_state.genesis_step = 0
         if 'genesis_briefing' not in st.session_state: st.session_state.genesis_briefing = {}
         if 'genesis_html_code' not in st.session_state: st.session_state.genesis_html_code = None
-
-        # --- LÓGICA DE EXIBIÇÃO ---
-
-        # Se a página já foi gerada, mostre o resultado final
         if st.session_state.genesis_html_code:
-            st.success("✅ Sua Landing Page foi gerada com sucesso!")
-            st.markdown("---")
-            
-            st.subheader("👀 Pré-visualização Interativa")
-            st.info("A pré-visualização abaixo é totalmente funcional. Role para ver a página completa.")
-            # Usando o componente de HTML do Streamlit para renderizar a página
+            st.success("✅ Sua Landing Page foi gerada com sucesso!"); st.markdown("---")
+            st.subheader("👀 Pré-visualização Interativa"); st.info("A pré-visualização abaixo é totalmente funcional. Role para ver a página completa.")
             st.components.v1.html(st.session_state.genesis_html_code, height=600, scrolling=True)
+            st.markdown("---"); st.subheader("📥 Baixar Código da Página")
+            st.download_button(label="Baixar index.html", data=st.session_state.genesis_html_code, file_name="index.html", mime="text/html", use_container_width=True, type="primary")
             st.markdown("---")
-
-            st.subheader("📥 Baixar Código da Página")
-            st.download_button(
-                label="Baixar index.html",
-                data=st.session_state.genesis_html_code,
-                file_name="index.html",
-                mime="text/html",
-                use_container_width=True,
-                type="primary"
-            )
-            st.markdown("---")
-
             with st.expander("🚀 Sua página está pronta! E agora? (Dicas de Hospedagem)"):
                 st.markdown("""
                 🎓 **MaxTrainer diz:** Hospedar sua página é mais fácil do que parece! Com o arquivo `index.html` em mãos, você pode publicá-la em minutos. Aqui estão 3 opções excelentes, muitas com planos gratuitos:
-
-                1.  **Netlify Drop:**
-                    * **Ideal para:** A maneira mais rápida de colocar um site no ar.
-                    * **Como funciona:** Literalmente arraste e solte seu arquivo `index.html` na plataforma deles.
-                    * **Link:** [https://app.netlify.com/drop](https://app.netlify.com/drop)
-
-                2.  **Vercel:**
-                    * **Ideal para:** Projetos que podem crescer, com performance excelente.
-                    * **Como funciona:** Conecte sua conta do GitHub, importe o repositório `Max-IA-Empresarial` e pronto.
-                    * **Link:** [https://vercel.com](https://vercel.com)
-
-                3.  **GitHub Pages:**
-                    * **Ideal para:** Hospedagem gratuita e simples, diretamente do seu código.
-                    * **Como funciona:** Dentro das configurações do seu repositório no GitHub, na seção "Pages", você pode ativar para que seu código seja publicado como um site.
-                    * **Link:** [https://pages.github.com/](https://pages.github.com/)
+                1.  **Netlify Drop:** Ideal para a maneira mais rápida de colocar um site no ar. Basta arrastar e soltar seu arquivo `index.html`. Link: [https://app.netlify.com/drop](https://app.netlify.com/drop)
+                2.  **Vercel:** Muito poderosa e com ótima performance, também com um processo de deploy muito simples. Link: [https://vercel.com](https://vercel.com)
+                3.  **GitHub Pages:** Se você já usa o GitHub, pode hospedar sua página diretamente do seu repositório, de graça. Link: [https://pages.github.com/](https://pages.github.com/)
                 """)
-            
             if st.button("✨ Criar Outra Landing Page"):
-                st.session_state.genesis_step = 0
-                st.session_state.genesis_briefing = {}
-                st.session_state.genesis_html_code = None
+                st.session_state.genesis_step = 0; st.session_state.genesis_briefing = {}; st.session_state.genesis_html_code = None
                 st.rerun()
-
-        # Se a entrevista foi concluída, mas a página ainda não foi gerada
         elif st.session_state.genesis_step > len(self.get_perguntas_genesis()):
             st.success("✅ Entrevista Concluída! Revise o briefing abaixo.")
-            st.markdown("---")
-            st.subheader("Resumo do Briefing da Landing Page:")
+            st.markdown("---"); st.subheader("Resumo do Briefing da Landing Page:")
             briefing_formatado = ""
             for i, (pergunta, resposta) in enumerate(st.session_state.genesis_briefing.items(), 1):
-                st.markdown(f"**{pergunta}**")
-                st.markdown(f"> {resposta}")
+                st.markdown(f"**{pergunta}**"); st.markdown(f"> {resposta}")
                 briefing_formatado += f"{i}. {pergunta}\nResposta: {resposta}\n\n"
             st.markdown("---")
-
             col1, col2 = st.columns(2)
             with col1:
-                if st.button("⬅️ Corrigir Respostas"):
-                    st.session_state.genesis_step = 1; st.rerun()
+                if st.button("⬅️ Corrigir Respostas"): st.session_state.genesis_step = 1; st.rerun()
             with col2:
                 if st.button("✨ Gerar Landing Page com Max IA!", type="primary"):
                     with st.spinner("🚀 Max Construtor está desenhando, codificando e otimizando sua página..."):
@@ -429,12 +343,9 @@ class MaxAgente:
                                 st.rerun()
                             else: st.error("LLM não disponível.")
                         except Exception as e: st.error(f"Erro ao contatar a IA: {e}")
-
-        # Se estivermos no meio da entrevista
         else:
             perguntas = self.get_perguntas_genesis()
             step = st.session_state.genesis_step
-            
             if step == 0:
                 st.info("Eu sou o Max Construtor. Juntos, vamos criar uma landing page de alta conversão. Responda a algumas perguntas e eu cuidarei do código e do design.")
                 if st.button("Vamos Começar a Entrevista!", type="primary"):
@@ -463,9 +374,7 @@ class MaxAgente:
     def get_prompt_construtor(self, briefing):
         return f"""
 **Instrução Mestra:** Você é um Desenvolvedor Web Full-Stack e Designer de UI/UX sênior, especialista em criar landing pages de alta conversão com HTML, CSS e um pouco de JavaScript.
-
 **Tarefa:** Crie o código completo para um **único arquivo `index.html`**. O arquivo DEVE ser autocontido e portátil.
-
 **Requisitos Técnicos Críticos:**
 1.  **Arquivo Único:** Todo o CSS e JavaScript deve estar incorporado no arquivo HTML. O CSS deve estar em uma tag `<style>` no `<head>` e o JavaScript (se houver) em uma tag `<script>` antes do fechamento de `</body>`. NÃO use links para arquivos externos de CSS ou JS.
 2.  **Responsividade:** O design DEVE ser 100% responsivo, adaptando-se perfeitamente a telas de desktop e celulares. Use CSS Flexbox ou Grid e Media Queries para garantir a responsividade.
@@ -477,14 +386,11 @@ class MaxAgente:
         * `<section id="prova-social">`: Para os depoimentos (se fornecidos).
         * `<section id="cta">`: Para a chamada de ação final com um botão estilizado.
     * `<footer>`: Um rodapé simples com o nome da empresa e o ano.
-
 **[BRIEFING DO USUÁRIO]**
 {briefing}
-
 **Diretiva Final:** Gere apenas o código HTML, começando com `<!DOCTYPE html>` e terminando com `</html>`. Não inclua nenhuma explicação fora do código.
 """
-
-    # ... (aqui continuam os outros métodos como exibir_max_financeiro, etc. sem alterações)
+    
     def exibir_max_financeiro(self): st.header("💰 MaxFinanceiro"); st.info("Em breve...")
     def exibir_max_administrativo(self): st.header("⚙️ MaxAdministrativo"); st.info("Em breve...")
     def exibir_max_pesquisa_mercado(self): st.header("📈 MaxPesquisa de Mercado"); st.info("Em breve...")
