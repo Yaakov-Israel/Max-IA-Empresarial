@@ -62,7 +62,7 @@ def gerar_arquivo_download(conteudo, formato):
         except RuntimeError:
             print(f"AVISO: Fonte '{caminho_fonte}' não encontrada. Usando 'Arial'."); pdf.set_font("Arial", size=12)
         pdf.multi_cell(0, 10, txt=conteudo.encode('latin-1', 'replace').decode('latin-1'))
-        return io.BytesIO(pdf.output(dest='S').encode('latin-1'))
+        return io.BytesIO(pdf.output(dest='S'))
     return None
 
 # ==============================================================================
