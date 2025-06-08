@@ -305,6 +305,7 @@ class MaxAgente:
     def exibir_max_trainer(self): st.header("🎓 MaxTrainer IA"); st.info("Em breve...")
 
 # ==============================================================================
+# ==============================================================================
 # 6. ESTRUTURA PRINCIPAL E EXECUÇÃO DO APP
 # ==============================================================================
 def main():
@@ -323,8 +324,31 @@ def main():
             if st.sidebar.button("Logout", key=f"{APP_KEY_SUFFIX}_logout"):
                 for k in list(st.session_state.keys()): del st.session_state[k]
                 st.rerun()
-            opcoes_menu = {"👋 Bem-vindo": agente.exibir_painel_boas_vindas, "🚀 Marketing": agente.exibir_max_marketing_total, "💰 Financeiro": agente.exibir_max_financeiro, "⚙️ Administrativo": agente.exibir_max_administrativo, "📈 Pesquisa": agente.exibir_max_pesquisa_mercado, "🧭 Estratégia": agente.exibir_max_bussola, "🎓 Trainer": agente.exibir_max_trainer}
+            
+            # ADICIONAMOS O MAX CONSTRUTOR AO MENU
+            opcoes_menu = {
+                "👋 Bem-vindo": agente.exibir_painel_boas_vindas,
+                "🚀 Marketing": agente.exibir_max_marketing_total,
+                "🏗️ Max Construtor": agente.exibir_max_construtor, # <-- NOSSO NOVO AGENTE!
+                "💰 Financeiro": agente.exibir_max_financeiro,
+                "⚙️ Administrativo": agente.exibir_max_administrativo,
+                "📈 Pesquisa": agente.exibir_max_pesquisa_mercado,
+                "🧭 Estratégia": agente.exibir_max_bussola,
+                "🎓 Trainer": agente.exibir_max_trainer
+            }
+            
+            # Lógica para resetar a entrevista se o usuário mudar de agente
+            if 'last_agent' not in st.session_state: st.session_state.last_agent = "👋 Bem-vindo"
+            
             selecao_label = st.sidebar.radio("Max Agentes IA:", list(opcoes_menu.keys()), key=f"main_nav_{APP_KEY_SUFFIX}")
+
+            if selecao_label != st.session_state.last_agent:
+                if st.session_state.last_agent == "🏗️ Max Construtor":
+                    # Se o usuário estava no construtor e saiu, resetamos a entrevista
+                    if 'genesis_step' in st.session_state: del st.session_state['genesis_step']
+                    if 'genesis_briefing' in st.session_state: del st.session_state['genesis_briefing']
+                st.session_state.last_agent = selecao_label
+
             opcoes_menu[selecao_label]()
         else: st.error("Agente Max IA não carregado.")
     else:
