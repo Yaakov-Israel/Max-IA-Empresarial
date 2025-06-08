@@ -221,18 +221,118 @@ class MaxAgente:
                                     else: st.error("LLM não disponível.")
                                 except Exception as e: st.error(f"Erro na IA: {e}")
 
+   # DENTRO DA CLASSE MaxAgente, SUBSTITUA O MÉTODO INTEIRO POR ESTE:
+
     def exibir_max_construtor(self):
         st.header("🏗️ Max Construtor de Landing Pages")
         st.caption("Vamos criar juntos uma página de vendas de alta conversão. Responda a entrevista abaixo.")
         st.markdown("---")
-        if 'genesis_step' not in st.session_state:
-            st.session_state.genesis_step = 0
-            st.session_state.genesis_briefing = {}
-        if st.session_state.genesis_step == 0:
-            st.info("Eu sou o Max Construtor. Juntos, vamos criar uma landing page de alta conversão. Responda a algumas perguntas e eu cuidarei de todo o código e design.")
-            if st.button("Vamos Começar a Entrevista!", type="primary"):
-                st.session_state.genesis_step = 1; st.rerun()
-        perguntas = {
+
+        # --- Gerenciamento de Estado ---
+        if 'genesis_step' not in st.session_state: st.session_state.genesis_step = 0
+        if 'genesis_briefing' not in st.session_state: st.session_state.genesis_briefing = {}
+        if 'genesis_html_code' not in st.session_state: st.session_state.genesis_html_code = None
+
+        # --- LÓGICA DE EXIBIÇÃO ---
+
+        # Se a página já foi gerada, mostre o resultado final
+        if st.session_state.genesis_html_code:
+            st.success("✅ Sua Landing Page foi gerada com sucesso!")
+            st.markdown("---")
+            
+            st.subheader("👀 Pré-visualização Interativa")
+            st.info("A pré-visualização abaixo é totalmente funcional. Role para ver a página completa.")
+            # Usando o componente de HTML do Streamlit para renderizar a página
+            st.components.v1.html(st.session_state.genesis_html_code, height=600, scrolling=True)
+            st.markdown("---")
+
+            st.subheader("📥 Baixar Código da Página")
+            st.download_button(
+                label="Baixar index.html",
+                data=st.session_state.genesis_html_code,
+                file_name="index.html",
+                mime="text/html",
+                use_container_width=True,
+                type="primary"
+            )
+            st.markdown("---")
+
+            with st.expander("🚀 Sua página está pronta! E agora? (Dicas de Hospedagem)"):
+                st.markdown("""
+                🎓 **MaxTrainer diz:** Hospedar sua página é mais fácil do que parece! Com o arquivo `index.html` em mãos, você pode publicá-la em minutos. Aqui estão 3 opções excelentes, muitas com planos gratuitos:
+
+                1.  **Netlify Drop:**
+                    * **Ideal para:** A maneira mais rápida de colocar um site no ar.
+                    * **Como funciona:** Literalmente arraste e solte seu arquivo `index.html` na plataforma deles.
+                    * **Link:** [https://app.netlify.com/drop](https://app.netlify.com/drop)
+
+                2.  **Vercel:**
+                    * **Ideal para:** Projetos que podem crescer, com performance excelente.
+                    * **Como funciona:** Conecte sua conta do GitHub, importe o repositório `Max-IA-Empresarial` e pronto.
+                    * **Link:** [https://vercel.com](https://vercel.com)
+
+                3.  **GitHub Pages:**
+                    * **Ideal para:** Hospedagem gratuita e simples, diretamente do seu código.
+                    * **Como funciona:** Dentro das configurações do seu repositório no GitHub, na seção "Pages", você pode ativar para que seu código seja publicado como um site.
+                    * **Link:** [https://pages.github.com/](https://pages.github.com/)
+                """)
+            
+            if st.button("✨ Criar Outra Landing Page"):
+                st.session_state.genesis_step = 0
+                st.session_state.genesis_briefing = {}
+                st.session_state.genesis_html_code = None
+                st.rerun()
+
+        # Se a entrevista foi concluída, mas a página ainda não foi gerada
+        elif st.session_state.genesis_step > len(self.get_perguntas_genesis()):
+            st.success("✅ Entrevista Concluída! Revise o briefing abaixo.")
+            st.markdown("---")
+            st.subheader("Resumo do Briefing da Landing Page:")
+            briefing_formatado = ""
+            for i, (pergunta, resposta) in enumerate(st.session_state.genesis_briefing.items(), 1):
+                st.markdown(f"**{pergunta}**")
+                st.markdown(f"> {resposta}")
+                briefing_formatado += f"{i}. {pergunta}\nResposta: {resposta}\n\n"
+            st.markdown("---")
+
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("⬅️ Corrigir Respostas"):
+                    st.session_state.genesis_step = 1; st.rerun()
+            with col2:
+                if st.button("✨ Gerar Landing Page com Max IA!", type="primary"):
+                    with st.spinner("🚀 Max Construtor está desenhando, codificando e otimizando sua página..."):
+                        prompt_construtor = self.get_prompt_construtor(briefing_formatado)
+                        try:
+                            if self.llm:
+                                resposta_ia = self.llm.invoke(prompt_construtor)
+                                st.session_state.genesis_html_code = resposta_ia.content
+                                st.rerun()
+                            else: st.error("LLM não disponível.")
+                        except Exception as e: st.error(f"Erro ao contatar a IA: {e}")
+
+        # Se estivermos no meio da entrevista
+        else:
+            perguntas = self.get_perguntas_genesis()
+            step = st.session_state.genesis_step
+            
+            if step == 0:
+                st.info("Eu sou o Max Construtor. Juntos, vamos criar uma landing page de alta conversão. Responda a algumas perguntas e eu cuidarei do código e do design.")
+                if st.button("Vamos Começar a Entrevista!", type="primary"):
+                    st.session_state.genesis_step = 1; st.rerun()
+            else:
+                p_info = perguntas[step]
+                st.progress(step / len(perguntas))
+                st.subheader(f"Pergunta {step}/{len(perguntas)}")
+                with st.expander("🎓 Dica do MaxTrainer"): st.write(p_info["dica"])
+                with st.form(key=f"genesis_form_{step}"):
+                    resposta = st.text_area(p_info["pergunta"], key=f"genesis_input_{step}", height=150)
+                    if st.form_submit_button("Próxima Pergunta ➡️"):
+                        st.session_state.genesis_briefing[p_info["pergunta"]] = resposta
+                        st.session_state.genesis_step += 1; st.rerun()
+
+    def get_perguntas_genesis(self):
+        return {
             1: {"pergunta": "Qual o nome do seu produto, serviço ou empresa?", "dica": "Seja claro e direto."},
             2: {"pergunta": "Qual é a sua grande promessa ou headline principal?", "dica": "Foque na transformação que você gera. Ex: 'Conforto e elegância a cada passo'."},
             3: {"pergunta": "Para quem é esta solução? Descreva seu cliente ideal.", "dica": "'Mulheres de 30-50 anos que valorizam o conforto' é melhor do que 'Pessoas que precisam de sapatos'."},
@@ -240,34 +340,37 @@ class MaxAgente:
             5: {"pergunta": "Você tem algum depoimento de cliente para incluir? (Opcional)", "dica": "A prova social é uma das ferramentas de venda mais poderosas."},
             6: {"pergunta": "Qual ação você quer que o visitante realize? (Sua Chamada para Ação - CTA)", "dica": "Use um verbo de ação claro. Ex: 'Compre agora', 'Agende uma demonstração'."}
         }
-        if 1 <= st.session_state.genesis_step <= len(perguntas):
-            step = st.session_state.genesis_step; p_info = perguntas[step]
-            st.subheader(f"Pergunta {step}/{len(perguntas)}")
-            with st.expander("🎓 Dica do MaxTrainer"): st.write(p_info["dica"])
-            with st.form(key=f"genesis_form_{step}"):
-                resposta = st.text_area(p_info["pergunta"], key=f"genesis_input_{step}")
-                if st.form_submit_button("Próxima Pergunta ➡️"):
-                    st.session_state.genesis_briefing[p_info["pergunta"]] = resposta
-                    st.session_state.genesis_step += 1; st.rerun()
-        elif st.session_state.genesis_step > len(perguntas):
-            st.success("✅ Entrevista Concluída! Revise o briefing abaixo.")
-            st.markdown("---"); st.subheader("Resumo do Briefing da Landing Page:")
-            for pergunta, resposta in st.session_state.genesis_briefing.items():
-                st.markdown(f"**{pergunta}**"); st.markdown(f"> {resposta}")
-            st.markdown("---")
-            col1, col2 = st.columns(2)
-            with col1:
-                if st.button("⬅️ Corrigir Respostas"): st.session_state.genesis_step = 1; st.rerun()
-            with col2:
-                if st.button("✨ Gerar Landing Page com Max IA!", type="primary"):
-                    st.info("Sprint 2: Em breve, vamos conectar este briefing à IA para gerar o código da sua página.")
-    
+
+    def get_prompt_construtor(self, briefing):
+        return f"""
+**Instrução Mestra:** Você é um Desenvolvedor Web Full-Stack e Designer de UI/UX sênior, especialista em criar landing pages de alta conversão com HTML, CSS e um pouco de JavaScript.
+
+**Tarefa:** Crie o código completo para um **único arquivo `index.html`**. O arquivo DEVE ser autocontido e portátil.
+
+**Requisitos Técnicos Críticos:**
+1.  **Arquivo Único:** Todo o CSS e JavaScript deve estar incorporado no arquivo HTML. O CSS deve estar em uma tag `<style>` no `<head>` e o JavaScript (se houver) em uma tag `<script>` antes do fechamento de `</body>`. NÃO use links para arquivos externos de CSS ou JS.
+2.  **Responsividade:** O design DEVE ser 100% responsivo, adaptando-se perfeitamente a telas de desktop e celulares. Use CSS Flexbox ou Grid e Media Queries para garantir a responsividade.
+3.  **Design:** Crie um design limpo, moderno e profissional. Use uma paleta de cores harmoniosa (ex: um azul principal, um cinza para textos, e um branco/cinza claro para fundos) e fontes legíveis do Google Fonts (importe 'Roboto' ou 'Montserrat' no CSS).
+4.  **Estrutura:** A página deve seguir a seguinte estrutura semântica:
+    * `<header>`: Contendo a headline principal (tag `<h1>`).
+    * `<main>`: Contendo as seções principais.
+        * `<section id="beneficios">`: Para os benefícios listados.
+        * `<section id="prova-social">`: Para os depoimentos (se fornecidos).
+        * `<section id="cta">`: Para a chamada de ação final com um botão estilizado.
+    * `<footer>`: Um rodapé simples com o nome da empresa e o ano.
+
+**[BRIEFING DO USUÁRIO]**
+{briefing}
+
+**Diretiva Final:** Gere apenas o código HTML, começando com `<!DOCTYPE html>` e terminando com `</html>`. Não inclua nenhuma explicação fora do código.
+"""
+
+    # ... (aqui continuam os outros métodos como exibir_max_financeiro, etc. sem alterações)
     def exibir_max_financeiro(self): st.header("💰 MaxFinanceiro"); st.info("Em breve...")
     def exibir_max_administrativo(self): st.header("⚙️ MaxAdministrativo"); st.info("Em breve...")
     def exibir_max_pesquisa_mercado(self): st.header("📈 MaxPesquisa de Mercado"); st.info("Em breve...")
     def exibir_max_bussola(self): st.header("🧭 MaxBússola Estratégica"); st.info("Em breve...")
     def exibir_max_trainer(self): st.header("🎓 MaxTrainer IA"); st.info("Em breve...")
-
 # ==============================================================================
 # 6. ESTRUTURA PRINCIPAL E EXECUÇÃO DO APP
 # ==============================================================================
