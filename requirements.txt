@@ -1,0 +1,10 @@
+streamlit
+Pyrebase4
+PyJWT
+firebase-admin
+google-cloud-firestore
+google-generativeai
+langchain-google-genai
+Pillow
+python-docx
+fpdf2
