@@ -185,8 +185,47 @@ class MaxAgente:
             st.session_state[session_key_post] = None
             if st.session_state[session_key_campaign]:
                 st.subheader("🎉 Plano de Campanha Gerado pelo Max IA!")
+
+                # ...
+        elif acao_selecionada == "Criar campanha completa":
+            st.session_state[session_key_post] = None
+            
+            # Este 'if' verifica se o prato (a campanha) já está pronto na mesa.
+            if st.session_state[session_key_campaign]:
+
+                # 1. O garçom anuncia o prato.
+                st.subheader("🎉 Plano de Campanha Gerado pelo Max IA!")
+                resposta_completa = st.session_state[session_key_campaign]
+
+                # 2. O garçom oferece para levar para viagem (download).
+                # <<< O CÓDIGO DE DOWNLOAD ENTRA EXATAMENTE AQUI >>>
+                st.markdown("---")
+                with st.expander("📥 Baixar Plano de Campanha Completo"):
+                    col1, col2 = st.columns([0.7, 0.3])
+                    with col1:
+                        formato_campanha = st.selectbox("Escolha o formato:", ("txt", "docx", "pdf"), key="dl_fmt_campaign")
+                    with col2:
+                        st.write("") # Espaçador
+                        st.write("") # Espaçador
+                        try:
+                            arquivo_bytes_campanha = gerar_arquivo_download(resposta_completa, formato_campanha)
+                            if arquivo_bytes_campanha:
+                                st.download_button(
+                                    label=f"Baixar como .{formato_campanha}",
+                                    data=arquivo_bytes_campanha,
+                                    file_name=f"plano_de_campanha_max_ia.{formato_campanha}",
+                                    use_container_width=True
+                                )
+                        except Exception as e:
+                            st.error(f"Erro no download: {e}")
+                st.markdown("---")
+                # <<< FIM DO CÓDIGO DE DOWNLOAD >>>
+
+                # 3. O garçom serve os detalhes do prato nas abas.
+                tab1, tab2, tab3, tab4 = st.tabs(...)
+                # ... etc ...
                 
-                # Função auxiliar para extrair seções da resposta da IA
+                                # Função auxiliar para extrair seções da resposta da IA
                 def extrair_secao(texto_completo, secao_inicio, todas_secoes):
                     try:
                         idx_inicio = texto_completo.index(secao_inicio) + len(secao_inicio)
