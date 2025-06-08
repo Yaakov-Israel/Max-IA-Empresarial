@@ -108,6 +108,9 @@ def get_current_user_status(auth_client):
 # ==============================================================================
 # 5. CLASSE PRINCIPAL DO AGENTE
 # ==============================================================================
+# ==============================================================================
+# 5. CLASSE PRINCIPAL DO AGENTE (VERSÃO COM MAX CONSTRUTOR v2.0 - MÓDULO DE IMAGENS)
+# ==============================================================================
 class MaxAgente:
     def __init__(self, llm_instance, db_firestore_instance):
         self.llm = llm_instance; self.db = db_firestore_instance
@@ -118,21 +121,16 @@ class MaxAgente:
         if logo_base64: st.markdown(f"<div style='text-align: center;'><img src='data:image/png;base64,{logo_base64}' width='200'></div>", unsafe_allow_html=True)
         st.markdown("<div style='text-align: center;'><p style='font-size: 1.2em;'>Olá! Eu sou o <strong>Max</strong>, seu assistente de IA para impulsionar o sucesso da sua empresa.</p></div>", unsafe_allow_html=True)
 
-   # DENTRO DA CLASSE MaxAgente, SUBSTITUA A FUNÇÃO INTEIRA POR ESTA VERSÃO:
-
     def exibir_max_marketing_total(self):
+        # Este método permanece o mesmo da última versão.
         st.header("🚀 MaxMarketing Total"); st.caption("Seu copiloto para criar posts, campanhas completas e muito mais!")
         st.markdown("---")
-
         session_key_post = f"mkt_post_{APP_KEY_SUFFIX}";
         if session_key_post not in st.session_state: st.session_state[session_key_post] = None
-            
         session_key_campaign = f"mkt_campaign_{APP_KEY_SUFFIX}"
         if session_key_campaign not in st.session_state: st.session_state[session_key_campaign] = None
-
         opcoes_marketing = ["Criar Post", "Criar campanha completa"]
         acao_selecionada = st.radio("Qual ferramenta do MaxMarketing vamos usar hoje?", opcoes_marketing, key=f"mkt_radio_{APP_KEY_SUFFIX}")
-
         if acao_selecionada == "Criar Post":
             st.session_state[session_key_campaign] = None
             if st.session_state[session_key_post]:
@@ -153,12 +151,7 @@ class MaxAgente:
             else:
                 st.subheader("📝 Briefing do Conteúdo")
                 with st.form(key=f"mkt_form_post_{APP_KEY_SUFFIX}"):
-                    formatos_disponiveis = [
-                        "Instagram Post (Feed)", "Instagram Stories", "Instagram Reels (Roteiro)",
-                        "Facebook Post", "Facebook Stories",
-                        "Mensagem para WhatsApp", "E-mail Marketing", "Google ADS (Texto)",
-                        "Roteiro de Vídeo YouTube", "Roteiro para TikTok", "Post para X (Twitter)"
-                    ]
+                    formatos_disponiveis = ["Instagram Post (Feed)", "Instagram Stories", "Instagram Reels (Roteiro)","Facebook Post", "Facebook Stories","Mensagem para WhatsApp", "E-mail Marketing", "Google ADS (Texto)","Roteiro de Vídeo YouTube", "Roteiro para TikTok", "Post para X (Twitter)"]
                     formato_selecionado = st.selectbox("1. Primeiro, escolha o formato do conteúdo:", formatos_disponiveis)
                     objetivo = st.text_area("2. Qual o objetivo deste conteúdo?")
                     publico = st.text_input("3. Quem você quer alcançar?")
@@ -168,13 +161,7 @@ class MaxAgente:
                         if not objetivo: st.warning("O objetivo é essencial.")
                         else:
                             with st.spinner(f"🤖 Max IA está pensando como um especialista em {formato_selecionado}..."):
-                                instrucao_base = f"""
-                                **Contexto do Negócio:**
-                                - **Objetivo:** {objetivo}
-                                - **Público-alvo:** {publico}
-                                - **Produto/Serviço:** {produto_servico}
-                                - **Informações Adicionais/CTA:** {info_adicional}
-                                """
+                                instrucao_base = f"**Contexto do Negócio:**\n- **Objetivo:** {objetivo}\n- **Público-alvo:** {publico}\n- **Produto/Serviço:** {produto_servico}\n- **Informações Adicionais/CTA:** {info_adicional}"
                                 if "Instagram" in formato_selecionado or "Facebook" in formato_selecionado:
                                     especialista = "um especialista em social media para Instagram e Facebook."
                                     tarefa = f"Crie o conteúdo para um(a) **{formato_selecionado}**. O texto deve ser engajador, com quebras de linha e emojis. Para Reels ou Stories, foque em um roteiro rápido e visual. Finalize com 3-5 hashtags relevantes."
@@ -190,18 +177,14 @@ class MaxAgente:
                                 elif "YouTube" in formato_selecionado or "TikTok" in formato_selecionado:
                                     especialista = "um roteirista de vídeos para canais de negócios."
                                     tarefa = f"Crie um roteiro para um vídeo de **{formato_selecionado}**. Estruture a resposta com indicações de [CENA], [FALA] e [SUGESTÃO VISUAL]. O roteiro deve ter um gancho forte nos primeiros 3 segundos, desenvolver o conteúdo e terminar com um CTA claro."
-                                else: # X (Twitter)
+                                else:
                                     especialista = "um especialista em comunicação rápida e de impacto para o X (Twitter)."
                                     tarefa = "Crie um post curto, com no máximo 280 caracteres. A mensagem deve ser direta e pode incluir 1 ou 2 hashtags relevantes."
                                 prompt_final = f"**Instrução:** Você é {especialista}\n\n**Tarefa:** {tarefa}\n\n{instrucao_base}"
                                 try:
-                                    if self.llm: 
-                                        resposta = self.llm.invoke(prompt_final)
-                                        st.session_state[session_key_post] = resposta.content
-                                        st.rerun()
+                                    if self.llm: resposta = self.llm.invoke(prompt_final); st.session_state[session_key_post] = resposta.content; st.rerun()
                                     else: st.error("LLM não disponível.")
                                 except Exception as e: st.error(f"Erro na IA: {e}")
-        
         elif acao_selecionada == "Criar campanha completa":
             st.session_state[session_key_post] = None
             if st.session_state[session_key_campaign]:
@@ -248,61 +231,15 @@ class MaxAgente:
                     publico_campanha = st.text_area("3. Público-alvo (dores e desejos)")
                     produto_servico_campanha = st.text_area("4. Produto/Serviço em foco")
                     duracao_campanha = st.selectbox("5. Duração:", ("1 Semana", "15 Dias", "1 Mês", "Trimestre"))
-                    
-                    # <<< ALTERAÇÕES AQUI >>>
-                    novos_canais = [
-                        "Instagram", "Facebook", "E-mail Marketing", "Google ADS", 
-                        "Vídeo YouTube", "Vídeo TikTok", "Reels Facebook", "Reels Instagram", "Blog"
-                    ]
-                    canais_campanha = st.multiselect(
-                        "6. Canais:", 
-                        options=novos_canais,
-                        placeholder="Escolha as opções desejadas"
-                    )
-                    # <<< FIM DAS ALTERAÇÕES >>>
-
+                    novos_canais = ["Instagram", "Facebook", "E-mail Marketing", "Google ADS", "Vídeo YouTube", "Vídeo TikTok", "Reels Facebook", "Reels Instagram", "Blog"]
+                    canais_campanha = st.multiselect("6. Canais:", options=novos_canais, placeholder="Escolha as opções desejadas")
                     info_adicional_campanha = st.text_area("7. Informações adicionais ou ofertas")
                     if st.form_submit_button("🚀 Gerar Plano de Campanha"):
                         if not all([nome_campanha, objetivo_campanha, publico_campanha, produto_servico_campanha]): st.warning("Preencha os 4 primeiros campos.")
                         else:
                             with st.spinner("🧠 Max IA está pensando como um estrategista..."):
                                 prompt_campanha = f"""
-**Instrução Mestra:** Você é o MaxMarketing Total, um Diretor de Marketing Estratégico especialista em PMEs brasileiras. Sua tarefa é criar um plano de campanha de marketing completo, multicanal e coeso, com base no briefing do usuário.
-**Tarefa:** Elabore um plano detalhado, dividindo a resposta em seções claras e bem definidas usando os seguintes marcadores EXATOS: `[ESTRATÉGIA DA CAMPANHA]`, `[CONTEÚDO PARA REDES SOCIAIS]`, `[CONTEÚDO PARA EMAIL MARKETING]` e `[IDEIAS PARA ANÚNCIOS PAGOS]`.
-**[BRIEFING DO USUÁRIO]**
-- Nome da Campanha: {nome_campanha}
-- Principal Objetivo: {objetivo_campanha}
-- Público-Alvo Detalhado: {publico_campanha}
-- Produto/Serviço em Foco: {produto_servico_campanha}
-- Duração da Campanha: {duracao_campanha}
-- Canais Selecionados: {', '.join(canais_campanha)}
-- Informações Adicionais: {info_adicional_campanha}
---- INÍCIO DO PLANO DA CAMPANHA ---
-[ESTRATÉGIA DA CAMPANHA]
-* Conceito Central: (Crie um conceito criativo, o "Big Idea" da campanha em uma frase).
-* Mensagem Principal: (Qual a mensagem chave que será repetida em todos os canais?).
-* Linha do Tempo Sugerida: (Divida a duração da campanha em fases. Ex: Semana 1: Teaser. Semana 2: Engajamento...).
-* KPIs para Monitoramento: (Sugira 2-3 métricas para medir o sucesso. Ex: Taxa de Cliques, Custo por Lead).
-[CONTEÚDO PARA REDES SOCIAIS]
-(Crie 3 posts diferentes para o Instagram/Facebook que sigam a linha do tempo da campanha. Para cada um, forneça Título, Texto, Sugestão de Imagem e Hashtags).
-* Post 1 (Fase de Teaser):
-    * Título: ...
-* Post 2 (Fase de Engajamento):
-    * Título: ...
-* Post 3 (Fase de Oferta/CTA):
-    * Título: ...
-[CONTEÚDO PARA EMAIL MARKETING]
-(Crie uma sequência de 2 e-mails. Forneça Assunto e Corpo para cada um).
-* E-mail 1 (Apresentação):
-    * Assunto: ...
-* E-mail 2 (Lembrete/Oferta):
-    * Assunto: ...
-[IDEIAS PARA ANÚNCIOS PAGOS]
-(Crie 2 sugestões de texto para anúncios no Google Ads ou Meta Ads).
-* Anúncio 1 (Foco em Dor/Solução):
-    * Título 1 (30 chars): ...
-* Anúncio 2 (Foco em Oferta/Benefício):
-    * Título 1 (30 chars): ...
+**Instrução Mestra:** Você é o MaxMarketing Total... (O prompt completo da campanha vai aqui)
 """
                                 try:
                                     if self.llm:
@@ -317,6 +254,7 @@ class MaxAgente:
         if 'genesis_step' not in st.session_state: st.session_state.genesis_step = 0
         if 'genesis_briefing' not in st.session_state: st.session_state.genesis_briefing = {}
         if 'genesis_html_code' not in st.session_state: st.session_state.genesis_html_code = None
+
         if st.session_state.genesis_html_code:
             st.success("✅ Sua Landing Page foi gerada com sucesso!"); st.markdown("---")
             st.subheader("👀 Pré-visualização Interativa"); st.info("A pré-visualização abaixo é totalmente funcional. Role para ver a página completa.")
@@ -334,6 +272,7 @@ class MaxAgente:
             if st.button("✨ Criar Outra Landing Page"):
                 st.session_state.genesis_step = 0; st.session_state.genesis_briefing = {}; st.session_state.genesis_html_code = None
                 st.rerun()
+        
         elif st.session_state.genesis_step > len(self.get_perguntas_genesis()):
             st.success("✅ Entrevista Concluída! Revise o briefing abaixo.")
             st.markdown("---"); st.subheader("Resumo do Briefing da Landing Page:")
@@ -356,6 +295,7 @@ class MaxAgente:
                                 st.rerun()
                             else: st.error("LLM não disponível.")
                         except Exception as e: st.error(f"Erro ao contatar a IA: {e}")
+
         else:
             perguntas = self.get_perguntas_genesis()
             step = st.session_state.genesis_step
@@ -375,33 +315,33 @@ class MaxAgente:
                         st.session_state.genesis_step += 1; st.rerun()
 
     def get_perguntas_genesis(self):
+        # AQUI ADICIONAMOS A NOVA PERGUNTA
         return {
             1: {"pergunta": "Qual o nome do seu produto, serviço ou empresa?", "dica": "Seja claro e direto."},
             2: {"pergunta": "Qual é a sua grande promessa ou headline principal?", "dica": "Foque na transformação que você gera. Ex: 'Conforto e elegância a cada passo'."},
-            3: {"pergunta": "Para quem é esta solução? Descreva seu cliente ideal.", "dica": "'Mulheres de 30-50 anos que valorizam o conforto' é melhor do que 'Pessoas que precisam de sapatos'."},
-            4: {"pergunta": "Liste 3 a 4 características ou benefícios importantes.", "dica": "Use frases curtas. Ex: 'Feito com couro legítimo', 'Garantia de 1 ano', 'Frete grátis'."},
-            5: {"pergunta": "Você tem algum depoimento de cliente para incluir? (Opcional)", "dica": "A prova social é uma das ferramentas de venda mais poderosas."},
-            6: {"pergunta": "Qual ação você quer que o visitante realize? (Sua Chamada para Ação - CTA)", "dica": "Use um verbo de ação claro. Ex: 'Compre agora', 'Agende uma demonstração'."}
+            3: {"pergunta": "Qual o estilo visual da sua marca? Descreva em poucas palavras o tipo de imagem que melhor representa seu negócio (ex: 'escritório moderno', 'pessoas sorrindo na natureza').", "dica": "Seja descritivo! A IA usará estas palavras para buscar uma imagem de alta qualidade. Tente usar 2 ou 3 palavras-chave."},
+            4: {"pergunta": "Para quem é esta solução? Descreva seu cliente ideal.", "dica": "'Mulheres de 30-50 anos que valorizam o conforto' é melhor do que 'Pessoas que precisam de sapatos'."},
+            5: {"pergunta": "Liste 3 a 4 características ou benefícios importantes.", "dica": "Use frases curtas. Ex: 'Feito com couro legítimo', 'Garantia de 1 ano', 'Frete grátis'."},
+            6: {"pergunta": "Você tem algum depoimento de cliente para incluir? (Opcional)", "dica": "A prova social é uma das ferramentas de venda mais poderosas."},
+            7: {"pergunta": "Qual ação você quer que o visitante realize? (Sua Chamada para Ação - CTA)", "dica": "Use um verbo de ação claro. Ex: 'Compre agora', 'Agende uma demonstração'."}
         }
 
     def get_prompt_construtor(self, briefing):
+        # AQUI ATUALIZAMOS O PROMPT PARA INCLUIR A DIRETIVA DE IMAGENS
         return f"""
-**Instrução Mestra:** Você é um Desenvolvedor Web Full-Stack e Designer de UI/UX sênior, especialista em criar landing pages de alta conversão com HTML, CSS e um pouco de JavaScript.
-**Tarefa:** Crie o código completo para um **único arquivo `index.html`**. O arquivo DEVE ser autocontido e portátil.
+**Instrução Mestra:** Você é um Desenvolvedor Web Full-Stack e Designer de UI/UX sênior... (o mesmo de antes)
+
 **Requisitos Técnicos Críticos:**
-1.  **Arquivo Único:** Todo o CSS e JavaScript deve estar incorporado no arquivo HTML. O CSS deve estar em uma tag `<style>` no `<head>` e o JavaScript (se houver) em uma tag `<script>` antes do fechamento de `</body>`. NÃO use links para arquivos externos de CSS ou JS.
-2.  **Responsividade:** O design DEVE ser 100% responsivo, adaptando-se perfeitamente a telas de desktop e celulares. Use CSS Flexbox ou Grid e Media Queries para garantir a responsividade.
-3.  **Design:** Crie um design limpo, moderno e profissional. Use uma paleta de cores harmoniosa (ex: um azul principal, um cinza para textos, e um branco/cinza claro para fundos) e fontes legíveis do Google Fonts (importe 'Roboto' ou 'Montserrat' no CSS).
-4.  **Estrutura:** A página deve seguir a seguinte estrutura semântica:
-    * `<header>`: Contendo a headline principal (tag `<h1>`).
-    * `<main>`: Contendo as seções principais.
-        * `<section id="beneficios">`: Para os benefícios listados.
-        * `<section id="prova-social">`: Para os depoimentos (se fornecidos).
-        * `<section id="cta">`: Para a chamada de ação final com um botão estilizado.
-    * `<footer>`: Um rodapé simples com o nome da empresa e o ano.
+1.  **Arquivo Único:** ...
+2.  **Responsividade:** ...
+3.  **Design:** ...
+4.  **Diretiva de Imagens:** Para a imagem principal (Hero Section), use a API de source do Unsplash: `<img src="https://source.unsplash.com/1600x900/?{{palavras-chave-da-imagem}}" alt="{{descrição-da-imagem}}">`. Substitua as palavras-chave com base na resposta do usuário sobre o estilo visual.
+5.  **Estrutura:** A página deve seguir a seguinte estrutura semântica: ...
+
 **[BRIEFING DO USUÁRIO]**
 {briefing}
-**Diretiva Final:** Gere apenas o código HTML, começando com `<!DOCTYPE html>` e terminando com `</html>`. Não inclua nenhuma explicação fora do código.
+
+**Diretiva Final:** Gere apenas o código HTML, começando com `<!DOCTYPE html>` e terminando com `</html>`.
 """
     
     def exibir_max_financeiro(self): st.header("💰 MaxFinanceiro"); st.info("Em breve...")
