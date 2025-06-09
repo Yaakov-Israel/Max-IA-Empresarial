@@ -103,4 +103,11 @@ class MaxAgente:
             if st.session_state[session_key_campaign]:
                 st.subheader("🎉 Plano de Campanha Gerado pelo Max IA!"); resposta_completa = st.session_state[session_key_campaign]
                 st.markdown("---")
-                with st.expander("🚀 Sua página está pronta! E agora? (Dicas de Hospedagem)"):                
+                with st.expander("🚀 Sua página está pronta! E agora? (Dicas de Hospedagem)"):             
+                st.markdown("""
+                🎓 **MaxTrainer diz:** Hospedar sua página é mais fácil do que parece! Com o arquivo `index.html` em mãos, você pode publicá-la em minutos. Aqui estão 3 opções excelentes, muitas com planos gratuitos:
+
+                1.  **Netlify Drop:** Ideal para a maneira mais rápida de colocar um site no ar. Basta arrastar e soltar seu arquivo `index.html`. Link: [https://app.netlify.com/drop](https://app.netlify.com/drop)
+                2.  **Vercel:** Muito poderosa e com ótima performance, também com um processo de deploy muito simples. Link: [https://vercel.com](https://vercel.com)
+                3.  **GitHub Pages:** Se você já usa o GitHub, pode hospedar sua página diretamente do seu repositório, de graça. Link: [https://pages.github.com/](https://pages.github.com/)
+                """)
