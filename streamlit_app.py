@@ -258,11 +258,16 @@ class MaxAgente:
             instrucoes.append(f"1. Encontre o comentário `` e substitua-o pela seguinte tag de imagem: `<img src='data:image/png;base64,{logo_b64}' alt='Logo da Empresa' style='max-height: 70px; margin-bottom: 20px;'>`")
         if main_image_b64:
             instrucoes.append(f"2. Encontre o comentário `` e substitua-o pela seguinte tag de imagem: `<img src='data:image/jpeg;base64,{main_image_b64}' alt='Imagem Principal do Produto' style='width: 100%; height: auto; border-radius: 8px; margin-top: 20px;'>`")
-        if not instrucoes: return None
+
+        if not instrucoes:
+            return None
+
         instrucao_str = "\n".join(instrucoes)
+
         return f"""
 **Instrução Mestra:** Você é um desenvolvedor web sênior que refatora um código HTML existente.
 **Tarefa:** Receba um código HTML base e um conjunto de instruções. Aplique as instruções para substituir os placeholders de comentário pelas tags de imagem fornecidas.
+
 **CÓDIGO HTML BASE:**
 ```html
 {html_base}
