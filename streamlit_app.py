@@ -263,7 +263,6 @@ class MaxAgente:
             return None
 
         instrucao_str = "\n".join(instrucoes)
-
         return f"""
 **Instrução Mestra:** Você é um desenvolvedor web sênior que refatora um código HTML existente.
 **Tarefa:** Receba um código HTML base e um conjunto de instruções. Aplique as instruções para substituir os placeholders de comentário pelas tags de imagem fornecidas.
