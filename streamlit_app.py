@@ -1,5 +1,5 @@
 # ==============================================================================
-# streamlit_app.py (v7.0 - A VERSÃO DE OURO)
+# streamlit_app.py (v7.1 - FOCO TOTAL EM VITRINE DIGITAL)
 # ==============================================================================
 
 # 1. IMPORTAÇÕES E CONFIGURAÇÃO INICIAL DA PÁGINA
@@ -29,7 +29,7 @@ st.set_page_config(page_title="Max IA", page_icon=page_icon_obj, layout="wide", 
 
 # 2. CONSTANTES E CARREGAMENTO DE CONFIGURAÇÕES
 # ==============================================================================
-APP_KEY_SUFFIX = "maxia_app_v7.0_golden"
+APP_KEY_SUFFIX = "maxia_app_v7.1_vitrine_focus"
 USER_COLLECTION = "users"
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 PROMPTS_CONFIG = carregar_prompts_config()
@@ -115,54 +115,16 @@ class MaxAgente:
     def exibir_max_marketing_total(self):
         st.header("🚀 MaxMarketing Total")
         st.caption("Seu copiloto para criar posts, campanhas e muito mais!")
-        st.info("Funcionalidades de Marketing e Campanhas estão operacionais.")
+        st.info("Em desenvolvimento...")
 
     def exibir_max_construtor(self):
-        st.header("🏗️ Max Construtor")
-        st.caption("Crie sua Página de Venda ou Landing Page de Captura.")
+        st.header("🏗️ Max Vitrine Digital")
+        st.caption("Crie uma página de vendas para seus produtos ou serviços.")
         st.markdown("---")
-        
-        # Gerenciamento de Estado
-        if 'builder_mode' not in st.session_state:
-            st.session_state.builder_mode = None
-        
-        # Se nenhum modo foi escolhido, mostra a seleção
-        if st.session_state.builder_mode is None:
-            st.subheader("Qual o principal objetivo da sua página?")
-            st.write("Escolha o que você deseja construir. Cada opção iniciará uma entrevista específica.")
-            col1, col2 = st.columns(2)
-            with col1:
-                if st.button("🛍️ Criar uma Vitrine Digital", help="Ideal para exibir múltiplos produtos ou serviços em uma única página.", use_container_width=True, type="primary"):
-                    st.session_state.builder_mode = "Vitrine Digital"
-                    st.rerun()
-            with col2:
-                if st.button("🎯 Criar uma Página de Captura", help="Ideal para capturar leads para um curso, e-book ou serviço específico.", use_container_width=True):
-                    st.session_state.builder_mode = "Landing Page"
-                    st.rerun()
-        
-        else:
-            # Botão para voltar à seleção de modo
-            if st.button("⬅️ Voltar e escolher outro tipo de página"):
-                st.session_state.builder_mode = None
-                # Limpar estados específicos do modo anterior
-                if 'genesis_step' in st.session_state: del st.session_state['genesis_step']
-                if 'genesis_briefing' in st.session_state: del st.session_state['genesis_briefing']
-                if 'genesis_html_code' in st.session_state: del st.session_state['genesis_html_code']
-                st.rerun()
-            
-            st.markdown("---")
 
-            # Executa a lógica do modo escolhido
-            if st.session_state.builder_mode == "Landing Page":
-                self.run_genesis_interview("Página de Captura")
-            elif st.session_state.builder_mode == "Vitrine Digital":
-                st.info("Modo de construção de Vitrine Digital em desenvolvimento. A entrevista abaixo é um protótipo.")
-                self.run_genesis_interview("Vitrine Digital")
-
-    def run_genesis_interview(self, page_type):
-        st.header(f"Entrevista para: {page_type}")
-        # Lógica da entrevista que já tínhamos
-        st.write("A entrevista e a geração de código para este modo serão implementadas em nosso próximo passo.")
+        # A lógica da entrevista, geração e ateliê virá aqui.
+        # Por enquanto, é um placeholder funcional.
+        st.info("Em construção: A entrevista inteligente para criar sua Vitrine Digital.")
 
 
     def exibir_max_financeiro(self): st.header("💰 MaxFinanceiro"); st.info("Em breve...")
@@ -191,7 +153,8 @@ def main():
             st.sidebar.write(f"Logado como: **{user_email}**")
 
             if st.sidebar.button("Logout", key=f"{APP_KEY_SUFFIX}_logout"):
-                for k in list(st.session_state.keys()): del st.session_state[k]
+                for k in list(st.session_state.keys()):
+                    del st.session_state[k]
                 st.rerun()
 
             opcoes_menu = {
@@ -204,18 +167,8 @@ def main():
                 "🧭 Estratégia": agente.exibir_max_bussola,
                 "🎓 Trainer": agente.exibir_max_trainer
             }
-            if 'last_agent' not in st.session_state: st.session_state.last_agent = "👋 Bem-vindo"
             
             selecao_label = st.sidebar.radio("Max Agentes IA:", list(opcoes_menu.keys()), key=f"main_nav_{APP_KEY_SUFFIX}")
-
-            # Resetar o estado do construtor se o usuário sair dele
-            if selecao_label != "🏗️ Max Construtor" and st.session_state.last_agent == "🏗️ Max Construtor":
-                keys_to_reset = ['builder_mode', 'genesis_step', 'genesis_briefing', 'genesis_html_code', 'refinement_mode']
-                for key in keys_to_reset:
-                    if key in st.session_state:
-                        del st.session_state[key]
-            
-            st.session_state.last_agent = selecao_label
             opcoes_menu[selecao_label]()
         else:
             st.error("Agente Max IA não carregado.")
@@ -223,12 +176,14 @@ def main():
         st.title("🔑 Bem-vindo ao Max IA")
         st.info("Faça login ou registre-se na barra lateral.")
         logo_base64 = convert_image_to_base64('max-ia-logo.png')
-        if logo_base64: st.image(f"data:image/png;base64,{logo_base64}", width=200)
+        if logo_base64:
+            st.image(f"data:image/png;base64,{logo_base64}", width=200)
 
         auth_action = st.sidebar.radio("Acesso:", ["Login", "Registrar"], key=f"{APP_KEY_SUFFIX}_auth_choice")
         if auth_action == "Login":
             with st.sidebar.form(f"{APP_KEY_SUFFIX}_login_form"):
-                email = st.text_input("Email"); password = st.text_input("Senha", type="password")
+                email = st.text_input("Email")
+                password = st.text_input("Senha", type="password")
                 if st.form_submit_button("Entrar"):
                     try:
                         st.session_state[f'{APP_KEY_SUFFIX}_user_session_data'] = dict(pb_auth_client.sign_in_with_email_and_password(email, password))
@@ -237,7 +192,8 @@ def main():
                         st.sidebar.error("Login falhou.")
         else:
             with st.sidebar.form(f"{APP_KEY_SUFFIX}_register_form"):
-                email = st.text_input("Seu Email"); password = st.text_input("Crie uma Senha", type="password")
+                email = st.text_input("Seu Email")
+                password = st.text_input("Crie uma Senha", type="password")
                 if st.form_submit_button("Registrar"):
                     if email and len(password) >= 6:
                         try:
