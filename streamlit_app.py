@@ -1,7 +1,9 @@
 # ==============================================================================
-# streamlit_app.py (VERSÃO FÊNIX v2.4 - CORREÇÃO FINAL DE SINTAXE)
+# streamlit_app.py (v6.0 - A VERSÃO DE OURO)
 # ==============================================================================
+
 # 1. IMPORTAÇÕES E CONFIGURAÇÃO INICIAL DA PÁGINA
+# ==============================================================================
 import streamlit as st
 import os
 import io
@@ -26,12 +28,14 @@ except Exception:
 st.set_page_config(page_title="Max IA", page_icon=page_icon_obj, layout="wide", initial_sidebar_state="expanded")
 
 # 2. CONSTANTES E CARREGAMENTO DE CONFIGURAÇÕES
-APP_KEY_SUFFIX = "maxia_app_v5.4_syntax_fix"
+# ==============================================================================
+APP_KEY_SUFFIX = "maxia_app_v6.0_golden"
 USER_COLLECTION = "users"
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 PROMPTS_CONFIG = carregar_prompts_config()
 
 # 3. FUNÇÕES AUXILIARES GLOBAIS
+# ==============================================================================
 def convert_image_to_base64(image_name):
     image_path = get_image_path(image_name)
     try:
@@ -55,7 +59,8 @@ def gerar_arquivo_download(conteudo, formato):
         return io.BytesIO(pdf.output(dest='S'))
     return None
 
-# 4. INICIALIZAÇÃO DE SERVIÇOS
+# 4. INICIALIZAÇÃO DE SERVIÇOS E AUTENTICAÇÃO
+# ==============================================================================
 @st.cache_resource
 def initialize_firebase_services():
     try:
@@ -94,38 +99,43 @@ def get_current_user_status(auth_client):
     return user_auth, uid, email
 
 # 5. CLASSE PRINCIPAL DO AGENTE
+# ==============================================================================
 class MaxAgente:
     def __init__(self, llm_instance, db_firestore_instance):
-        self.llm = llm_instance
-        self.db = db_firestore_instance
+        self.llm = llm_instance; self.db = db_firestore_instance
 
     def exibir_painel_boas_vindas(self):
         st.markdown("<div style='text-align: center;'><h1>👋 Bem-vindo ao Max IA!</h1></div>", unsafe_allow_html=True)
         logo_base64 = convert_image_to_base64('max-ia-logo.png')
-        if logo_base64:
-            st.markdown(f"<div style='text-align: center;'><img src='data:image/png;base64,{logo_base64}' width='200'></div>", unsafe_allow_html=True)
+        if logo_base64: st.markdown(f"<div style='text-align: center;'><img src='data:image/png;base64,{logo_base64}' width='200'></div>", unsafe_allow_html=True)
         st.markdown("<div style='text-align: center;'><p style='font-size: 1.2em;'>Olá! Eu sou o <strong>Max</strong>, seu assistente de IA para impulsionar o sucesso da sua empresa.</p></div>", unsafe_allow_html=True)
 
     def exibir_max_marketing_total(self):
-        st.header("🚀 MaxMarketing Total")
-        st.caption("Seu copiloto para criar posts, campanhas completas e muito mais!")
+        st.header("🚀 MaxMarketing Total"); st.caption("Seu copiloto para criar posts, campanhas e muito mais!")
         st.markdown("---")
-        # ... (código completo do marketing omitido para brevidade, mas está correto)
+        session_key_post = f"mkt_post_{APP_KEY_SUFFIX}";
+        if session_key_post not in st.session_state: st.session_state[session_key_post] = None
+        session_key_campaign = f"mkt_campaign_{APP_KEY_SUFFIX}"
+        if session_key_campaign not in st.session_state: st.session_state[session_key_campaign] = None
+        opcoes_marketing = ["Criar Post", "Criar campanha completa"]
+        acao_selecionada = st.radio("Qual ferramenta do MaxMarketing vamos usar hoje?", opcoes_marketing, key=f"mkt_radio_{APP_KEY_SUFFIX}")
+
+        if acao_selecionada == "Criar Post":
+            # ... (Lógica para Criar Post)
+        elif acao_selecionada == "Criar campanha completa":
+            # ... (Lógica para Criar Campanha)
 
     def exibir_max_construtor(self):
-        st.header("🏗️ Max Construtor de Landing Pages")
-        st.caption("Gere a base da sua página e depois a refine no Ateliê.")
+        st.header("🏗️ Max Construtor de Landing Pages"); st.caption("Gere a base da sua página e depois a refine no Ateliê.")
         st.markdown("---")
+        
+        # Gerenciamento de Estado
+        if 'genesis_step' not in st.session_state: st.session_state.genesis_step = 0
+        if 'genesis_briefing' not in st.session_state: st.session_state.genesis_briefing = {}
+        if 'genesis_html_code' not in st.session_state: st.session_state.genesis_html_code = None
+        if 'refinement_mode' not in st.session_state: st.session_state.refinement_mode = False
 
-        if 'genesis_step' not in st.session_state:
-            st.session_state.genesis_step = 0
-        if 'genesis_briefing' not in st.session_state:
-            st.session_state.genesis_briefing = {}
-        if 'genesis_html_code' not in st.session_state:
-            st.session_state.genesis_html_code = None
-        if 'refinement_mode' not in st.session_state:
-            st.session_state.refinement_mode = False
-
+        # MODO ATELIÊ DE REFINAMENTO
         if st.session_state.refinement_mode:
             st.subheader("🎨 Ateliê de Refinamento")
             st.info("Faça o upload dos seus arquivos para personalizar a página.")
@@ -139,16 +149,10 @@ class MaxAgente:
                     else:
                         with st.spinner("🔧 Max está no Ateliê, aplicando seus toques finais..."):
                             logo_b64, main_image_b64 = None, None
-                            if logo_file:
-                                logo_bytes = logo_file.getvalue()
-                                logo_b64 = base64.b64encode(logo_bytes).decode()
-                            if main_image_file:
-                                main_image_bytes = main_image_file.getvalue()
-                                main_image_b64 = base64.b64encode(main_image_bytes).decode()
-                            
+                            if logo_file: logo_b64 = base64.b64encode(logo_file.getvalue()).decode()
+                            if main_image_file: main_image_b64 = base64.b64encode(main_image_file.getvalue()).decode()
                             html_base = st.session_state.genesis_html_code
                             prompt_refinamento = self.get_prompt_refinamento(html_base, logo_b64, main_image_b64)
-                            
                             try:
                                 if self.llm and prompt_refinamento:
                                     resposta_ia = self.llm.invoke(prompt_refinamento).content
@@ -156,33 +160,29 @@ class MaxAgente:
                                     st.session_state.genesis_html_code = html_final
                                     st.session_state.refinement_mode = False
                                     st.rerun()
-                                else:
-                                    st.error("LLM não disponível ou nenhuma personalização a ser feita.")
-                            except Exception as e:
-                                st.error(f"Ocorreu um erro durante o refinamento: {e}")
-
+                                else: st.error("Nenhuma personalização a ser feita ou LLM indisponível.")
+                            except Exception as e: st.error(f"Ocorreu um erro durante o refinamento: {e}")
             if st.button("⬅️ Voltar para o Esboço"):
-                st.session_state.refinement_mode = False
-                st.rerun()
+                st.session_state.refinement_mode = False; st.rerun()
 
+        # MODO DE EXIBIÇÃO DA PÁGINA GERADA
         elif st.session_state.genesis_html_code:
             st.success("✅ Esboço da Landing Page gerado com sucesso!")
             st.markdown("---")
-            st.subheader("🎨 Próximos Passos")
-            col1, col2, col3 = st.columns(3)
+            col1, col2, col3 = st.columns([1, 1, 2])
             with col1:
-                if st.button("✨ Começar do Zero", use_container_width=True):
-                    st.session_state.genesis_step = 0; st.session_state.genesis_briefing = {}; st.session_state.genesis_html_code = None; st.session_state.refinement_mode = False
-                    st.rerun()
+                if st.button("🎨 Personalizar com Imagens", use_container_width=True, type="primary"):
+                    st.session_state.refinement_mode = True; st.rerun()
             with col2:
                  st.download_button(label="📥 Baixar Esboço HTML", data=st.session_state.genesis_html_code, file_name="esboco_index.html", mime="text/html", use_container_width=True)
             with col3:
-                if st.button("🎨 Personalizar com Imagens", use_container_width=True, type="primary"):
-                    st.session_state.refinement_mode = True
+                if st.button("✨ Começar do Zero", use_container_width=True):
+                    st.session_state.genesis_step = 0; st.session_state.genesis_briefing = {}; st.session_state.genesis_html_code = None; st.session_state.refinement_mode = False
                     st.rerun()
             st.subheader("👀 Pré-visualização do Esboço")
             st.components.v1.html(st.session_state.genesis_html_code, height=600, scrolling=True)
 
+        # MODO DE RESUMO DA ENTREVISTA
         elif st.session_state.genesis_step > len(self.get_perguntas_genesis()):
             st.success("✅ Entrevista Concluída! Revise o briefing abaixo.")
             st.markdown("---"); st.subheader("Resumo do Briefing:")
@@ -209,14 +209,15 @@ class MaxAgente:
                                 st.rerun()
                             else: st.error("LLM não disponível.")
                         except Exception as e: st.error(f"Erro ao contatar a IA: {e}")
+        
+        # MODO DE ENTREVISTA
         else:
             perguntas = self.get_perguntas_genesis()
             step = st.session_state.genesis_step
             if step == 0:
                 st.info("Eu sou o Max Construtor. Juntos, vamos criar a base da sua landing page respondendo a uma breve entrevista.")
                 if st.button("Vamos Começar!", type="primary"):
-                    st.session_state.genesis_step = 1
-                    st.rerun()
+                    st.session_state.genesis_step = 1; st.rerun()
             else:
                 p_info = perguntas[step]
                 st.progress(step / len(perguntas))
@@ -229,13 +230,11 @@ class MaxAgente:
                     with col_nav1:
                         if st.form_submit_button("⬅️ Pergunta Anterior", use_container_width=True, disabled=(step == 1)):
                             st.session_state.genesis_briefing[p_info["pergunta"]] = resposta
-                            st.session_state.genesis_step -= 1
-                            st.rerun()
+                            st.session_state.genesis_step -= 1; st.rerun()
                     with col_nav2:
                         if st.form_submit_button("Próxima Pergunta ➡️", use_container_width=True, type="primary"):
                             st.session_state.genesis_briefing[p_info["pergunta"]] = resposta
-                            st.session_state.genesis_step += 1
-                            st.rerun()
+                            st.session_state.genesis_step += 1; st.rerun()
 
     def get_perguntas_genesis(self):
         return {
@@ -262,7 +261,6 @@ class MaxAgente:
     * **Ato 2 (Benefícios e CTA):** Crie uma seção para os benefícios listados e inclua a chamada para ação principal (botão).
     * **Ato 3 (Destaques e CTA Final):** Crie uma seção de rodapé expandida (footer) com espaço para 3 a 6 destaques ou informações adicionais (ex: 'Entrega Rápida', 'Suporte 24h') e repita a chamada para ação.
 5.  **Placeholders de Imagem:** Use comentários HTML claros: ``, ``, ``.
-
 **[BRIEFING DO USUÁRIO]**
 {briefing}
 **Diretiva Final:** Gere **APENAS O CÓDIGO HTML PURO**, começando com `<!DOCTYPE html>` e terminando com `</html>`. NÃO inclua ```html.
@@ -274,10 +272,7 @@ class MaxAgente:
             instrucoes.append(f"1. Encontre o comentário `` e substitua-o pela seguinte tag de imagem: `<img src='data:image/png;base64,{logo_b64}' alt='Logo da Empresa' style='max-height: 70px; margin-bottom: 20px;'>`")
         if main_image_b64:
             instrucoes.append(f"2. Encontre o comentário `` e substitua-o pela seguinte tag de imagem: `<img src='data:image/jpeg;base64,{main_image_b64}' alt='Imagem Principal do Produto' style='width: 100%; height: auto; border-radius: 8px; margin-top: 20px;'>`")
-        
-        if not instrucoes:
-            return None
-
+        if not instrucoes: return None
         instrucao_str = "\n".join(instrucoes)
         return f"""
 **Instrução Mestra:** Você é um desenvolvedor web sênior que refatora um código HTML existente.
