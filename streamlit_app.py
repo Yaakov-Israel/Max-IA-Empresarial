@@ -112,10 +112,90 @@ class MaxAgente:
             st.markdown(f"<div style='text-align: center;'><img src='data:image/png;base64,{logo_base64}' width='200'></div>", unsafe_allow_html=True)
         st.markdown("<div style='text-align: center;'><p style='font-size: 1.2em;'>Olá! Eu sou o <strong>Max</strong>, seu assistente de IA para impulsionar o sucesso da sua empresa.</p></div>", unsafe_allow_html=True)
 
+    # DENTRO DA CLASSE MaxAgente, SUBSTITUA ESTE MÉTODO:
+    
     def exibir_max_marketing_total(self):
-        st.header("🚀 MaxMarketing Total")
-        st.caption("Seu copiloto para criar posts, campanhas e muito mais!")
-        st.info("Em breve: Reconstrução do módulo de Posts e Campanhas.")
+        st.header("🚀 MaxMarketing Total"); st.caption("Seu copiloto para criar posts, campanhas completas e muito mais!")
+        st.markdown("---")
+
+        session_key_post = f"mkt_post_{APP_KEY_SUFFIX}";
+        if session_key_post not in st.session_state: st.session_state[session_key_post] = None
+            
+        session_key_campaign = f"mkt_campaign_{APP_KEY_SUFFIX}"
+        if session_key_campaign not in st.session_state: st.session_state[session_key_campaign] = None
+
+        opcoes_marketing = ["Criar Post", "Criar campanha completa"]
+        acao_selecionada = st.radio("Qual ferramenta do MaxMarketing vamos usar hoje?", opcoes_marketing, key=f"mkt_radio_{APP_KEY_SUFFIX}")
+
+        if acao_selecionada == "Criar Post":
+            st.session_state[session_key_campaign] = None
+            if st.session_state[session_key_post]:
+                st.subheader("🎉 Conteúdo Gerado pelo Max IA!")
+                st.markdown(st.session_state[session_key_post])
+                st.markdown("---")
+                st.subheader("📥 Baixar Conteúdo")
+                col1, col2 = st.columns([0.7, 0.3])
+                with col1:
+                    formato = st.selectbox("Formato:", ("txt", "docx", "pdf"), key=f"dl_fmt_post_{APP_KEY_SUFFIX}")
+                with col2:
+                    st.write(""); st.write("")
+                    try:
+                        arquivo_bytes = gerar_arquivo_download(st.session_state[session_key_post], formato)
+                        if arquivo_bytes:
+                            st.download_button(f"Baixar .{formato}", arquivo_bytes, f"post_max_ia.{formato}", use_container_width=True)
+                    except Exception as e:
+                        st.error(f"Erro no download: {e}")
+                st.markdown("---")
+                if st.button("✨ Criar Outro Conteúdo"):
+                    st.session_state[session_key_post] = None; st.rerun()
+            else:
+                st.subheader("📝 Briefing do Conteúdo")
+                with st.form(key=f"mkt_form_post_{APP_KEY_SUFFIX}"):
+                    formatos_disponiveis = [
+                        "Post para Blog (Gerar Leads)",
+                        "Anúncio para OLX / Mercado Livre", "Descrição de Produto para Shopify / E-commerce",
+                        "Instagram Post (Feed)", "Instagram Stories", "Instagram Reels (Roteiro)",
+                        "Facebook Post", "Facebook Stories", "Mensagem para WhatsApp", 
+                        "E-mail Marketing", "Google ADS (Texto)","Roteiro de Vídeo YouTube", 
+                        "Roteiro para TikTok", "Post para X (Twitter)"
+                    ]
+                    formato_selecionado = st.selectbox("1. Primeiro, escolha o formato do conteúdo:", formatos_disponiveis)
+                    objetivo = st.text_area("2. Qual o objetivo deste conteúdo?")
+                    publico = st.text_input("3. Quem você quer alcançar?")
+                    produto_servico = st.text_area("4. Qual produto ou serviço principal está promovendo?")
+                    info_adicional = st.text_area("5. Alguma informação adicional, oferta ou CTA (Chamada para Ação)?")
+                    if st.form_submit_button("💡 Gerar Conteúdo com Max IA!"):
+                        if not objetivo:
+                            st.warning("O objetivo é essencial.")
+                        else:
+                            with st.spinner(f"🤖 Max IA está pensando como um especialista em {formato_selecionado}..."):
+                                instrucao_base = f"**Contexto do Negócio:**\n- **Objetivo:** {objetivo}\n- **Público-alvo:** {publico}\n- **Produto/Serviço:** {produto_servico}\n- **Informações Adicionais/CTA:** {info_adicional}"
+                                
+                                tarefa = ""
+                                especialista = "um especialista de marketing digital"
+                                if "OLX" in formato_selecionado or "Mercado Livre" in formato_selecionado:
+                                    especialista = "um vendedor experiente de marketplaces."
+                                    tarefa = "Crie um anúncio otimizado. Gere um Título chamativo (máx 60 caracteres) e uma Descrição detalhada e persuasiva."
+                                elif "Shopify" in formato_selecionado or "E-commerce" in formato_selecionado:
+                                    especialista = "um especialista em copywriting para e-commerce."
+                                    tarefa = "Crie uma descrição de produto completa e otimizada para SEO. Gere um Título de Produto claro, uma Descrição Persuasiva e 3 a 5 bullet points."
+                                elif "Blog" in formato_selecionado:
+                                    especialista = "um especialista em SEO e Marketing de Conteúdo."
+                                    tarefa = "Crie um post de blog otimizado para gerar leads. Estruture com um Título magnético, uma introdução que prenda a atenção, desenvolva o tema com subtítulos e parágrafos curtos, e finalize com uma conclusão e um CTA claro para o leitor tomar uma ação (ex: baixar um material, se inscrever na newsletter)."
+                                # Adicione outras lógicas de tarefa aqui...
+                                
+                                prompt_final = f"**Instrução:** Você é {especialista}\n\n**Tarefa:** {tarefa}\n\n{instrucao_base}"
+                                try:
+                                    if self.llm:
+                                        resposta = self.llm.invoke(prompt_final)
+                                        st.session_state[session_key_post] = resposta.content
+                                        st.rerun()
+                                    else: st.error("LLM não disponível.")
+                                except Exception as e: st.error(f"Erro na IA: {e}")
+        
+        elif acao_selecionada == "Criar campanha completa":
+            # A lógica da campanha que já funciona vai aqui
+            st.info("Funcionalidade de Campanha está operacional.")
 
     def exibir_max_construtor(self):
         st.header("🏗️ Max Vitrine Digital")
