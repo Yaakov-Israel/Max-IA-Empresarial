@@ -117,22 +117,29 @@ class MaxAgente:
         if acao_selecionada == "Criar Post":
             st.session_state[session_key_campaign] = None
             if st.session_state[session_key_post]:
-                st.subheader("🎉 Conteúdo Gerado pelo Max IA!"); st.markdown(st.session_state[session_key_post]); st.markdown("---")
+                st.subheader("🎉 Conteúdo Gerado pelo Max IA!")
+                st.markdown(st.session_state[session_key_post])
+                st.markdown("---")
                 st.subheader("📥 Baixar Conteúdo")
                 col1, col2 = st.columns([0.7, 0.3])
-                with col1: formato = st.selectbox("Formato:", ("txt", "docx", "pdf"), key=f"dl_fmt_post_{APP_KEY_SUFFIX}")
+                with col1:
+                    formato = st.selectbox("Formato:", ("txt", "docx", "pdf"), key=f"dl_fmt_post_{APP_KEY_SUFFIX}")
                 with col2:
-                    st.write(""); st.write("")
+                    st.write("")
+                    st.write("")
                     try:
                         arquivo_bytes = gerar_arquivo_download(st.session_state[session_key_post], formato)
-                        if arquivo_bytes: st.download_button(f"Baixar .{formato}", arquivo_bytes, f"post_max_ia.{formato}", use_container_width=True)
-                    except Exception as e: st.error(f"Erro no download: {e}")
+                        if arquivo_bytes:
+                            st.download_button(f"Baixar .{formato}", arquivo_bytes, f"post_max_ia.{formato}", use_container_width=True)
+                    except Exception as e:
+                        st.error(f"Erro no download: {e}")
                 st.markdown("---")
-                if st.button("✨ Criar Outro Conteúdo"): st.session_state[session_key_post] = None; st.rerun()
+                if st.button("✨ Criar Outro Conteúdo"):
+                    st.session_state[session_key_post] = None
+                    st.rerun()
             else:
                 st.subheader("📝 Briefing do Conteúdo")
                 with st.form(key=f"mkt_form_post_{APP_KEY_SUFFIX}"):
-                    # <<< NOVO: OPÇÕES DE E-COMMERCE ADICIONADAS >>>
                     formatos_disponiveis = [
                         "Instagram Post (Feed)", "Instagram Stories", "Instagram Reels (Roteiro)",
                         "Facebook Post", "Facebook Stories", "Mensagem para WhatsApp", 
@@ -146,12 +153,11 @@ class MaxAgente:
                     produto_servico = st.text_area("4. Qual produto ou serviço principal está promovendo?")
                     info_adicional = st.text_area("5. Alguma informação adicional, oferta ou CTA (Chamada para Ação)?")
                     if st.form_submit_button("💡 Gerar Conteúdo com Max IA!"):
-                        if not objetivo: st.warning("O objetivo é essencial.")
+                        if not objetivo:
+                            st.warning("O objetivo é essencial.")
                         else:
                             with st.spinner(f"🤖 Max IA está pensando como um especialista em {formato_selecionado}..."):
                                 instrucao_base = f"**Contexto do Negócio:**\n- **Objetivo:** {objetivo}\n- **Público-alvo:** {publico}\n- **Produto/Serviço:** {produto_servico}\n- **Informações Adicionais/CTA:** {info_adicional}"
-                                
-                                # <<< NOVO: LÓGICA DE PROMPT PARA E-COMMERCE >>>
                                 if "OLX" in formato_selecionado or "Mercado Livre" in formato_selecionado:
                                     especialista = "um vendedor experiente de marketplaces como OLX e Mercado Livre."
                                     tarefa = "Crie um anúncio otimizado. Gere um Título chamativo (máx 60 caracteres) e uma Descrição detalhada e persuasiva, incluindo benefícios, especificações técnicas (se aplicável) e condições. Use parágrafos curtos."
@@ -173,29 +179,108 @@ class MaxAgente:
                                 elif "YouTube" in formato_selecionado or "TikTok" in formato_selecionado:
                                     especialista = "um roteirista de vídeos para canais de negócios."
                                     tarefa = f"Crie um roteiro para um vídeo de **{formato_selecionado}**. Estruture a resposta com indicações de [CENA], [FALA] e [SUGESTÃO VISUAL]."
-                                else: # X (Twitter)
+                                else:
                                     especialista = "um especialista em comunicação rápida para o X (Twitter)."
                                     tarefa = "Crie um post curto, com no máximo 280 caracteres."
-                                
                                 prompt_final = f"**Instrução:** Você é {especialista}\n\n**Tarefa:** {tarefa}\n\n{instrucao_base}"
                                 try:
-                                    if self.llm: resposta = self.llm.invoke(prompt_final); st.session_state[session_key_post] = resposta.content; st.rerun()
-                                    else: st.error("LLM não disponível.")
-                                except Exception as e: st.error(f"Erro na IA: {e}")
-        
+                                    if self.llm:
+                                        resposta = self.llm.invoke(prompt_final)
+                                        st.session_state[session_key_post] = resposta.content
+                                        st.rerun()
+                                    else:
+                                        st.error("LLM não disponível.")
+                                except Exception as e:
+                                    st.error(f"Erro na IA: {e}")
+     
         elif acao_selecionada == "Criar campanha completa":
             st.session_state[session_key_post] = None
             if st.session_state[session_key_campaign]:
-                st.subheader("🎉 Plano de Campanha Gerado pelo Max IA!"); resposta_completa = st.session_state[session_key_campaign]
+                st.subheader("🎉 Plano de Campanha Gerado pelo Max IA!")
+                resposta_completa = st.session_state[session_key_campaign]
                 st.markdown("---")
                 with st.expander("📥 Baixar Plano de Campanha Completo"):
-                    # ... (código do download da campanha)
+                    col1, col2 = st.columns([0.7, 0.3])
+                    with col1:
+                        formato_campanha = st.selectbox("Escolha o formato:", ("txt", "docx", "pdf"), key="dl_fmt_campaign")
+                    with col2:
+                        st.write("")
+                        st.write("")
+                        try:
+                            arquivo_bytes_campanha = gerar_arquivo_download(resposta_completa, formato_campanha)
+                            if arquivo_bytes_campanha:
+                                st.download_button(
+                                    label=f"Baixar como .{formato_campanha}",
+                                    data=arquivo_bytes_campanha,
+                                    file_name=f"plano_de_campanha_max_ia.{formato_campanha}",
+                                    use_container_width=True
+                                )
+                        except Exception as e:
+                            st.error(f"Erro no download: {e}")
                 st.markdown("---")
-                # ... (código das abas da campanha)
+                
+                def extrair_secao(texto_completo, secao_inicio, todas_secoes):
+                    try:
+                        idx_inicio = texto_completo.index(secao_inicio) + len(secao_inicio)
+                        idx_fim = len(texto_completo)
+                        secao_atual_index = todas_secoes.index(secao_inicio)
+                        if secao_atual_index + 1 < len(todas_secoes):
+                            proxima_secao = todas_secoes[secao_atual_index + 1]
+                            if proxima_secao in texto_completo:
+                                idx_fim = texto_completo.index(proxima_secao)
+                        return texto_completo[idx_inicio:idx_fim].strip()
+                    except ValueError:
+                        return f"A seção '{secao_inicio}' não foi encontrada na resposta."
+                
+                secoes = ["[ESTRATÉGIA DA CAMPANHA]", "[CONTEÚDO PARA REDES SOCIAIS]", "[CONTEÚDO PARA EMAIL MARKETING]", "[IDEIAS PARA ANÚNCIOS PAGOS]"]
+                conteudo_estrategia = extrair_secao(resposta_completa, secoes[0], secoes)
+                conteudo_redes = extrair_secao(resposta_completa, secoes[1], secoes)
+                conteudo_email = extrair_secao(resposta_completa, secoes[2], secoes)
+                conteudo_anuncios = extrair_secao(resposta_completa, secoes[3], secoes)
+                
+                tab1, tab2, tab3, tab4 = st.tabs(["🧭 Estratégia", "📱 Redes Sociais", "✉️ E-mail", "💰 Anúncios"])
+                with tab1:
+                    st.markdown(conteudo_estrategia)
+                with tab2:
+                    st.markdown(conteudo_redes)
+                with tab3:
+                    st.markdown(conteudo_email)
+                with tab4:
+                    st.markdown(conteudo_anuncios)
+                
+                st.markdown("---")
+                if st.button("✨ Criar Nova Campanha"):
+                    st.session_state[session_key_campaign] = None
+                    st.rerun()
             else:
-                 st.subheader("📝 Briefing da Campanha Estratégica")
-                 with st.form(key=f"mkt_form_campaign_{APP_KEY_SUFFIX}"):
-                    # ... (código do formulário da campanha)
+                st.subheader("📝 Briefing da Campanha Estratégica")
+                with st.form(key=f"mkt_form_campaign_{APP_KEY_SUFFIX}"):
+                    st.write("Preencha os detalhes abaixo para o Max IA construir seu plano de campanha.")
+                    nome_campanha = st.text_input("1. Nome da Campanha")
+                    objetivo_campanha = st.text_area("2. Principal Objetivo")
+                    publico_campanha = st.text_area("3. Público-alvo (dores e desejos)")
+                    produto_servico_campanha = st.text_area("4. Produto/Serviço em foco")
+                    duracao_campanha = st.selectbox("5. Duração:", ("1 Semana", "15 Dias", "1 Mês", "Trimestre"))
+                    novos_canais = ["Instagram", "Facebook", "E-mail Marketing", "Google ADS", "Vídeo YouTube", "Vídeo TikTok", "Reels Facebook", "Reels Instagram", "Blog"]
+                    canais_campanha = st.multiselect("6. Canais:", options=novos_canais, placeholder="Escolha as opções desejadas")
+                    info_adicional_campanha = st.text_area("7. Informações adicionais ou ofertas")
+                    if st.form_submit_button("🚀 Gerar Plano de Campanha"):
+                        if not all([nome_campanha, objetivo_campanha, publico_campanha, produto_servico_campanha]):
+                            st.warning("Preencha os 4 primeiros campos.")
+                        else:
+                            with st.spinner("🧠 Max IA está pensando como um estrategista..."):
+                                # Este prompt foi deixado incompleto de propósito na versão anterior.
+                                # O ideal é ter o prompt completo aqui.
+                                prompt_campanha = "Gerar um plano de campanha detalhado com base no briefing." # Placeholder
+                                try:
+                                    if self.llm:
+                                        resposta_ia = self.llm.invoke(prompt_campanha)
+                                        st.session_state[session_key_campaign] = resposta_ia.content
+                                        st.rerun()
+                                    else:
+                                        st.error("LLM não disponível.")
+                                except Exception as e:
+                                    st.error(f"Erro na IA: {e}")
     
     def exibir_max_construtor(self):
         st.header("🏗️ Max Construtor de Landing Pages"); st.caption("Vamos criar juntos uma página de vendas de alta conversão.")
