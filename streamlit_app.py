@@ -103,6 +103,13 @@ class MaxAgente:
     def __init__(self, llm_instance, db_firestore_instance):
         self.llm = llm_instance
         self.db = db_firestore_instance
+    def exibir_painel_boas_vindas(self):
+        st.markdown("<div style='text-align: center;'><h1>👋 Bem-vindo ao Max IA!</h1></div>", unsafe_allow_html=True)
+        logo_base64 = convert_image_to_base64('max-ia-logo.png')
+        if logo_base64:
+            st.markdown(f"<div style='text-align: center;'><img src='data:image/png;base64,{logo_base64}' width='200'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align: center;'><p style='font-size: 1.2em;'>Olá! Eu sou o <strong>Max</strong>, seu assistente de IA para impulsionar o sucesso da sua empresa.</p></div>", unsafe_allow_html=True
+        
 ## --- INÍCIO DO SUB-MÓDULO 5.1: MaxMarketing Total --- ##
 
     def get_prompt_campanha(self, nome_campanha, objetivo, publico, produto, duracao, canais, info_adicional):
@@ -255,3 +262,76 @@ class MaxAgente:
                                     st.error(f"Erro na IA: {e}")
 
     ## --- FIM DO SUB-MÓDULO 5.1: MaxMarketing Total --- ##
+# 6. ESTRUTURA PRINCIPAL E EXECUÇÃO DO APP
+# ==============================================================================
+def main():
+    if not all([pb_auth_client, firestore_db, PROMPTS_CONFIG]):
+        st.stop()
+
+    user_is_authenticated, _, user_email = get_current_user_status(pb_auth_client)
+
+    if user_is_authenticated:
+        llm = get_llm()
+        if 'agente' not in st.session_state and llm:
+            st.session_state.agente = MaxAgente(llm, firestore_db)
+        
+        if 'agente' in st.session_state:
+            agente = st.session_state.agente
+            st.sidebar.title("Max IA")
+            st.sidebar.markdown("---")
+            st.sidebar.write(f"Logado como: **{user_email}**")
+
+            if st.sidebar.button("Logout", key=f"{APP_KEY_SUFFIX}_logout"):
+                for k in list(st.session_state.keys()):
+                    del st.session_state[k]
+                st.rerun()
+
+            # Por enquanto, o menu só tem uma opção funcional, que vamos expandir
+            opcoes_menu = {
+                "👋 Bem-vindo": agente.exibir_painel_boas_vindas,
+                # Outros agentes virão aqui
+            }
+            
+            selecao_label = st.sidebar.radio("Max Agentes IA:", list(opcoes_menu.keys()), key=f"main_nav_{APP_KEY_SUFFIX}")
+            opcoes_menu[selecao_label]()
+        else:
+            st.error("Agente Max IA não carregado.")
+    else:
+        st.title("🔑 Bem-vindo ao Max IA")
+        st.info("Faça login ou registre-se na barra lateral.")
+        logo_base64 = convert_image_to_base64('max-ia-logo.png')
+        if logo_base64:
+            st.image(f"data:image/png;base64,{logo_base64}", width=200)
+
+        auth_action = st.sidebar.radio("Acesso:", ["Login", "Registrar"], key=f"{APP_KEY_SUFFIX}_auth_choice")
+        if auth_action == "Login":
+            with st.sidebar.form(f"{APP_KEY_SUFFIX}_login_form"):
+                email = st.text_input("Email")
+                password = st.text_input("Senha", type="password")
+                if st.form_submit_button("Entrar"):
+                    try:
+                        user_creds = pb_auth_client.sign_in_with_email_and_password(email, password)
+                        st.session_state[f'{APP_KEY_SUFFIX}_user_session_data'] = dict(user_creds)
+                        st.rerun()
+                    except Exception:
+                        st.sidebar.error("Login falhou.")
+        else:
+            with st.sidebar.form(f"{APP_KEY_SUFFIX}_register_form"):
+                email = st.text_input("Seu Email")
+                password = st.text_input("Crie uma Senha", type="password")
+                if st.form_submit_button("Registrar"):
+                    if email and len(password) >= 6:
+                        try:
+                            new_user = pb_auth_client.create_user_with_email_and_password(email, password)
+                            firestore_db.collection(USER_COLLECTION).document(new_user['localId']).set({"email": email, "registration_date": firebase_admin.firestore.SERVER_TIMESTAMP}, merge=True)
+                            st.sidebar.success("Conta criada! Faça o login.")
+                        except Exception:
+                            st.sidebar.error("E-mail já em uso ou erro no registro.")
+                    else:
+                        st.sidebar.warning("Dados inválidos.")
+    
+    st.sidebar.markdown("---")
+    st.sidebar.info("Max IA | by Yaakov Israel & Gemini AI")
+
+if __name__ == "__main__":
+    main()
