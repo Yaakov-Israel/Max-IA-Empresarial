@@ -97,3 +97,9 @@ def get_current_user_status(auth_client):
             st.rerun()
     st.session_state.user_is_authenticated = user_auth; st.session_state.user_uid = uid; st.session_state.user_email = email
     return user_auth, uid, email
+# 5. CLASSE PRINCIPAL DO AGENTE
+# ==============================================================================
+class MaxAgente:
+    def __init__(self, llm_instance, db_firestore_instance):
+        self.llm = llm_instance
+        self.db = db_firestore_instance
