@@ -478,7 +478,7 @@ def main():
                             user_data = {
                                 "email": email,
                                 "registration_date": firebase_admin_firestore.SERVER_TIMESTAMP,
-                                "analogy_domain": None
+                                "analogy_domain": None,
                                 "company_id": None
                             }
                             firestore_db.collection(USER_COLLECTION).document(new_user['localId']).set(user_data, merge=True)
