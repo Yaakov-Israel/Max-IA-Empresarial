@@ -387,14 +387,14 @@ class MaxAgente:
         if logo_b64:
             instrucoes.append(f"1. Encontre o comentário `` e substitua-o por esta tag de imagem: `<img src='data:image/png;base64,{logo_b64}' alt='Logo da Empresa' style='max-height: 70px;'>`")
         if main_image_b64:
-            instrucoes.append(f"2. Encontre o comentário `` e substitua-o por esta tag de imagem: `<img src='data:image/jpeg;base64,{main_image_b64}' alt='Imagem Principal do Produto' style='width: 100%; height: auto; border-radius: 8px;'>`")
+            # Assumindo que o placeholder de vídeo será o local da imagem principal por enquanto
+            instrucoes.append(f"2. Encontre o comentário `` e substitua-o por esta tag de imagem: `<img src='data:image/jpeg;base64,{main_image_b64}' alt='Imagem Principal do Produto' style='width: 100%; height: auto; border-radius: 8px; margin-top: 20px;'>`")
         
         if not instrucoes:
-            return None
+            return None # Retorna None se não houver nada a fazer
 
         instrucao_str = "\n".join(instrucoes)
 
-        # AQUI ESTÁ A MUDANÇA: usando parênteses em vez de aspas triplas
         return (
             "**Instrução Mestra:** Você é um desenvolvedor web sênior que refatora um código HTML existente.\n"
             "**Tarefa:** Receba um código HTML base e um conjunto de instruções. Aplique as instruções para substituir os placeholders de comentário pelas tags de imagem fornecidas.\n\n"
@@ -406,7 +406,6 @@ class MaxAgente:
             f"{instrucao_str}\n\n"
             "**Diretiva Final:** Retorne **APENAS O NOVO CÓDIGO HTML COMPLETO**, começando com `<!DOCTYPE html>` e terminando com `</html>`. NÃO inclua explicações ou aspas de formatação."
         )
-
 # 6. ESTRUTURA PRINCIPAL E EXECUÇÃO DO APP
 # ==============================================================================
 def main():
