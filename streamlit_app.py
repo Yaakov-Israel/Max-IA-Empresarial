@@ -235,11 +235,7 @@ class MaxAgente:
                             except Exception as e:
                                 st.error(f"Erro na IA: {e}")
         
-        elif acao_selecionada == "Criar campanha completa":
-            # A lógica da campanha que já funciona vai aqui
-            st.info("Funcionalidade de Campanha está operacional.")
-
-    def exibir_max_construtor(self):
+            def exibir_max_construtor(self):
         st.header("🏗️ Max Vitrine Digital")
         st.caption("Vamos criar juntos uma página de vendas para seus produtos ou serviços.")
         st.markdown("---")
