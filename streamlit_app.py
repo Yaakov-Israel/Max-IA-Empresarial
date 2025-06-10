@@ -97,22 +97,118 @@ def get_current_user_status(auth_client):
             st.rerun()
     st.session_state.user_is_authenticated = user_auth; st.session_state.user_uid = uid; st.session_state.user_email = email
     return user_auth, uid, email
+# ==============================================================================
 # 5. CLASSE PRINCIPAL DO AGENTE
 # ==============================================================================
 class MaxAgente:
     def __init__(self, llm_instance, db_firestore_instance):
         self.llm = llm_instance
         self.db = db_firestore_instance
+
     def exibir_painel_boas_vindas(self):
         st.markdown("<div style='text-align: center;'><h1>👋 Bem-vindo ao Max IA!</h1></div>", unsafe_allow_html=True)
         logo_base64 = convert_image_to_base64('max-ia-logo.png')
         if logo_base64:
             st.markdown(f"<div style='text-align: center;'><img src='data:image/png;base64,{logo_base64}' width='200'></div>", unsafe_allow_html=True)
         st.markdown("<div style='text-align: center;'><p style='font-size: 1.2em;'>Olá! Eu sou o <strong>Max</strong>, seu assistente de IA para impulsionar o sucesso da sua empresa.</p></div>", unsafe_allow_html=True)
+
+    ## --- INÍCIO DO SUB-MÓDULO 5.5: MaxTrainer IA --- ##
+
+    def exibir_onboarding_trainer(self):
+        st.title("Bem-vindo ao seu Mentor Pessoal!")
+        # Supondo que PROMPTS_CONFIG foi carregado globalmente.
+        st.markdown(PROMPTS_CONFIG.get('trainer', {}).get('onboarding_intro', "Olá! Eu sou o seu mentor pessoal de IA. Para que nossas conversas sejam mais produtivas, me conte sobre um assunto que você gosta ou domina fora do trabalho."))
+
+        opcoes_analogia = ["Futebol", "Culinária", "Carros", "Cinema e Séries", "Música", "Moda", "Negócios (tradicional)"]
         
-## --- INÍCIO DO SUB-MÓDULO 5.1: MaxMarketing Total --- ##
+        dominio_escolhido = st.selectbox(
+            "Para que eu possa te explicar tudo de um jeito que faça sentido para você, escolha um assunto abaixo:",
+            opcoes_analogia,
+            key="analogy_choice"
+        )
+
+        if st.button("Salvar e começar a jornada!", key="save_analogy_domain"):
+            user_uid = st.session_state.get('user_uid')
+            if user_uid and self.db:
+                try:
+                    user_ref = self.db.collection(USER_COLLECTION).document(user_uid)
+                    user_ref.update({"analogy_domain": dominio_escolhido.lower()})
+                    st.success(f"Ótima escolha! Agora vamos falar a mesma língua. Redirecionando...")
+                    time.sleep(2)
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Erro ao salvar sua preferência: {e}")
+            else:
+                st.error("Não foi possível salvar. UID do usuário não encontrado.")
+
+    def get_analogy_prompt(self, user_question, analogy_domain):
+        # Este prompt é o coração do nosso agente!
+        return f"""
+**Instrução Mestra:** Você é o MaxTrainer IA, um mentor de negócios amigável, paciente e genial. Sua especialidade é explicar conceitos de negócios complexos usando analogias simples e detalhadas.
+
+**Contexto:**
+- **Domínio de Analogia do Usuário:** {analogy_domain}
+- **Pergunta do Usuário:** {user_question}
+
+**Sua Tarefa em 3 Passos:**
+1.  **Identifique o Conceito Central:** Entenda qual é o conceito de negócios principal por trás da pergunta do usuário.
+2.  **Busque a Definição Factual:** Internamente, pense na definição técnica e correta do conceito.
+3.  **Crie a Resposta com Analogia:** Responda ao usuário EXCLUSIVAMENTE usando uma analogia detalhada baseada no DOMÍNIO DE ANALOGIA dele. Não use jargões de negócios. Seja didático, divertido e profundo. Comece a resposta de forma amigável.
+
+**Exemplo (se o domínio fosse 'culinária' e a pergunta 'O que é SWOT?'):**
+"Ótima pergunta! Pensar em SWOT é como planejar um grande jantar.
+- **Forças:** São seus 'ingredientes secretos', o que sua cozinha faz de melhor. Ex: O tempero especial da sua avó que ninguém copia.
+- **Fraquezas:** É aquele prato que sempre queima. Ex: Seu forno não assa direito.
+- **Oportunidades:** São as tendências lá fora. Ex: Seus vizinhos amariam receber marmitas.
+- **Ameaças:** É a nova padaria chique que abriu na sua rua."
+
+**--- INÍCIO DA RESPOSTA ---**
+"""
+
+    def exibir_max_trainer_ia(self):
+        st.title("🎓 MaxTrainer IA")
+        st.markdown("Seu mentor pessoal para descomplicar a jornada empreendedora. Faça qualquer pergunta de negócios!")
+
+        if "messages_trainer" not in st.session_state:
+            st.session_state.messages_trainer = [{"role": "assistant", "content": "Olá! Sobre o que vamos conversar hoje?"}]
+
+        for message in st.session_state.messages_trainer:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
+
+        if prompt := st.chat_input("Pergunte sobre DRE, Fluxo de Caixa, Marketing..."):
+            st.session_state.messages_trainer.append({"role": "user", "content": prompt})
+            with st.chat_message("user"):
+                st.markdown(prompt)
+
+            with st.chat_message("assistant"):
+                message_placeholder = st.empty()
+                with st.spinner("MaxTrainer está pensando na melhor analogia para você..."):
+                    try:
+                        user_uid = st.session_state.get('user_uid')
+                        user_doc = self.db.collection(USER_COLLECTION).document(user_uid).get()
+                        analogy_domain = user_doc.to_dict().get("analogy_domain", "negócios") # Fallback
+                        
+                        final_prompt = self.get_analogy_prompt(prompt, analogy_domain)
+                        
+                        if self.llm:
+                            full_response = self.llm.invoke(final_prompt).content
+                        else:
+                            full_response = "Desculpe, meu cérebro (LLM) não está disponível agora."
+                            
+                    except Exception as e:
+                        full_response = f"Ocorreu um erro ao processar sua pergunta: {e}"
+                
+                message_placeholder.markdown(full_response)
+            st.session_state.messages_trainer.append({"role": "assistant", "content": full_response})
+
+    ## --- FIM DO SUB-MÓDULO 5.5: MaxTrainer IA --- ##
+
+
+    ## --- INÍCIO DO SUB-MÓDULO 5.1: MaxMarketing Total --- ##
 
     def get_prompt_campanha(self, nome_campanha, objetivo, publico, produto, duracao, canais, info_adicional):
+        # ... (seu código do get_prompt_campanha continua aqui)
         return f"""
 **Instrução Mestra:** Você é o MaxMarketing Total, um Diretor de Marketing Estratégico especialista em PMEs brasileiras. Sua tarefa é criar um plano de campanha de marketing completo, multicanal e coeso, com base no briefing do usuário.
 **Tarefa:** Elabore um plano detalhado, dividindo a resposta em seções claras e bem definidas usando os seguintes marcadores EXATOS: `[ESTRATÉGIA DA CAMPANHA]`, `[CONTEÚDO PARA REDES SOCIAIS]`, `[CONTEÚDO PARA EMAIL MARKETING]` e `[IDEIAS PARA ANÚNCIOS PAGOS]`.
@@ -148,6 +244,7 @@ class MaxAgente:
 """
 
     def exibir_max_marketing_total(self):
+        # ... (todo o seu código do exibir_max_marketing_total continua aqui)
         st.header("🚀 MaxMarketing Total"); st.caption("Seu copiloto para criar posts, campanhas completas e muito mais!")
         st.markdown("---")
 
@@ -184,7 +281,6 @@ class MaxAgente:
                         if not objetivo: st.warning("O objetivo é essencial.")
                         else:
                             with st.spinner(f"🤖 Max IA está pensando como um especialista em {formato_selecionado}..."):
-                                # Lógica de Prompt Dinâmico
                                 instrucao_base = f"**Contexto do Negócio:**\n- **Objetivo:** {objetivo}\n- **Público-alvo:** {publico}\n- **Produto/Serviço:** {produto_servico}\n- **Informações Adicionais/CTA:** {info_adicional}"
                                 if "OLX" in formato_selecionado or "Mercado Livre" in formato_selecionado:
                                     especialista = "um vendedor experiente de marketplaces."
@@ -260,45 +356,78 @@ class MaxAgente:
                                         st.error("LLM não disponível.")
                                 except Exception as e:
                                     st.error(f"Erro na IA: {e}")
-
     ## --- FIM DO SUB-MÓDULO 5.1: MaxMarketing Total --- ##
+# ==============================================================================
 # 6. ESTRUTURA PRINCIPAL E EXECUÇÃO DO APP
 # ==============================================================================
 def main():
+    # Garante que os serviços essenciais foram carregados antes de continuar.
     if not all([pb_auth_client, firestore_db, PROMPTS_CONFIG]):
+        st.error("Falha crítica na inicialização dos serviços. A aplicação não pode continuar.")
         st.stop()
 
-    user_is_authenticated, _, user_email = get_current_user_status(pb_auth_client)
+    user_is_authenticated, user_uid, user_email = get_current_user_status(pb_auth_client)
 
     if user_is_authenticated:
         llm = get_llm()
-        if 'agente' not in st.session_state and llm:
+        if 'agente' not in st.session_state and llm and firestore_db:
             st.session_state.agente = MaxAgente(llm, firestore_db)
         
-        if 'agente' in st.session_state:
-            agente = st.session_state.agente
-            st.sidebar.title("Max IA")
-            st.sidebar.markdown("---")
-            st.sidebar.write(f"Logado como: **{user_email}**")
-
-            if st.sidebar.button("Logout", key=f"{APP_KEY_SUFFIX}_logout"):
-                for k in list(st.session_state.keys()):
-                    del st.session_state[k]
-                st.rerun()
-
-            # Por enquanto, o menu só tem uma opção funcional, que vamos expandir
-            opcoes_menu = {
-                "👋 Bem-vindo": agente.exibir_painel_boas_vindas,
-                # Outros agentes virão aqui
-            }
+        agente = st.session_state.get('agente')
+        if agente:
             
-            selecao_label = st.sidebar.radio("Max Agentes IA:", list(opcoes_menu.keys()), key=f"main_nav_{APP_KEY_SUFFIX}")
-            opcoes_menu[selecao_label]()
+            # --- NOVA LÓGICA DE VERIFICAÇÃO DE ONBOARDING ---
+            # Verificamos no Firestore se o usuário já completou o onboarding.
+            try:
+                user_doc_ref = firestore_db.collection(USER_COLLECTION).document(user_uid)
+                user_doc = user_doc_ref.get()
+                if user_doc.exists:
+                    user_data = user_doc.to_dict()
+                else:
+                    user_data = None # Usuário autenticado mas sem registro no Firestore? Cria um.
+                    user_doc_ref.set({"email": user_email, "registration_date": firebase_admin.firestore.SERVER_TIMESTAMP, "analogy_domain": None})
+
+            except Exception as e:
+                st.error(f"Erro ao buscar dados do usuário: {e}")
+                user_data = None
+
+            # Se o usuário já tem um 'analogy_domain', ele fez o onboarding. Mostra o app normal.
+            if user_data and user_data.get("analogy_domain"):
+                
+                st.sidebar.title("Max IA")
+                st.sidebar.markdown("Seu Centro de Comando Inteligente")
+                st.sidebar.markdown("---")
+                st.sidebar.write(f"Logado como: **{user_email}**")
+
+                if st.sidebar.button("Logout", key=f"{APP_KEY_SUFFIX}_logout"):
+                    for k in list(st.session_state.keys()):
+                        del st.session_state[k]
+                    st.rerun()
+
+                # Menu principal de agentes
+                opcoes_menu = {
+                    "👋 Bem-vindo": agente.exibir_painel_boas_vindas,
+                    "🚀 MaxMarketing Total": agente.exibir_max_marketing_total,
+                    "🎓 MaxTrainer IA": agente.exibir_max_trainer_ia,
+                    # --- Futuros agentes virão aqui ---
+                    # "💰 MaxFinanceiro": agente.exibir_max_financeiro,
+                    # "⚙️ MaxAdministrativo": agente.exibir_max_administrativo,
+                }
+                
+                selecao_label = st.sidebar.radio("Max Agentes IA:", list(opcoes_menu.keys()), key=f"main_nav_{APP_KEY_SUFFIX}")
+                opcoes_menu[selecao_label]()
+
+            # Se o usuário ainda não tem um 'analogy_domain', ele precisa fazer o onboarding.
+            else:
+                agente.exibir_onboarding_trainer()
+
         else:
-            st.error("Agente Max IA não carregado.")
+            st.error("Agente Max IA não pôde ser carregado. Verifique a chave de API e a conexão.")
+    
+    # Se o usuário não está autenticado, exibe a tela de Login/Registro
     else:
         st.title("🔑 Bem-vindo ao Max IA")
-        st.info("Faça login ou registre-se na barra lateral.")
+        st.info("Faça login ou registre-se na barra lateral para começar.")
         logo_base64 = convert_image_to_base64('max-ia-logo.png')
         if logo_base64:
             st.image(f"data:image/png;base64,{logo_base64}", width=200)
@@ -314,21 +443,29 @@ def main():
                         st.session_state[f'{APP_KEY_SUFFIX}_user_session_data'] = dict(user_creds)
                         st.rerun()
                     except Exception:
-                        st.sidebar.error("Login falhou.")
-        else:
+                        st.sidebar.error("Erro no login. Verifique as credenciais.")
+        else: # Bloco de Registro
             with st.sidebar.form(f"{APP_KEY_SUFFIX}_register_form"):
                 email = st.text_input("Seu Email")
-                password = st.text_input("Crie uma Senha", type="password")
-                if st.form_submit_button("Registrar"):
+                password = st.text_input("Crie uma Senha (mín. 6 caracteres)", type="password")
+                if st.form_submit_button("Registrar Conta"):
                     if email and len(password) >= 6:
                         try:
                             new_user = pb_auth_client.create_user_with_email_and_password(email, password)
-                            firestore_db.collection(USER_COLLECTION).document(new_user['localId']).set({"email": email, "registration_date": firebase_admin.firestore.SERVER_TIMESTAMP}, merge=True)
-                            st.sidebar.success("Conta criada! Faça o login.")
-                        except Exception:
+                            
+                            # ---- CÓDIGO DO PASSO 1 JÁ INTEGRADO AQUI ----
+                            user_data = {
+                                "email": email,
+                                "registration_date": firebase_admin_firestore.SERVER_TIMESTAMP,
+                                "analogy_domain": None
+                            }
+                            firestore_db.collection(USER_COLLECTION).document(new_user['localId']).set(user_data, merge=True)
+                            
+                            st.sidebar.success("Conta criada! Por favor, faça o login.")
+                        except Exception as e:
                             st.sidebar.error("E-mail já em uso ou erro no registro.")
                     else:
-                        st.sidebar.warning("Dados inválidos.")
+                        st.sidebar.warning("Preencha todos os campos corretamente.")
     
     st.sidebar.markdown("---")
     st.sidebar.info("Max IA | by Yaakov Israel & Gemini AI")
