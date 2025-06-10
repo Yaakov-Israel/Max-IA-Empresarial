@@ -235,7 +235,7 @@ class MaxAgente:
                             except Exception as e:
                                 st.error(f"Erro na IA: {e}")
         
-            def exibir_max_construtor(self):
+        def exibir_max_construtor(self):
         st.header("🏗️ Max Vitrine Digital")
         st.caption("Vamos criar juntos uma página de vendas para seus produtos ou serviços.")
         st.markdown("---")
