@@ -108,7 +108,7 @@ class MaxAgente:
         logo_base64 = convert_image_to_base64('max-ia-logo.png')
         if logo_base64:
             st.markdown(f"<div style='text-align: center;'><img src='data:image/png;base64,{logo_base64}' width='200'></div>", unsafe_allow_html=True)
-        st.markdown("<div style='text-align: center;'><p style='font-size: 1.2em;'>Olá! Eu sou o <strong>Max</strong>, seu assistente de IA para impulsionar o sucesso da sua empresa.</p></div>", unsafe_allow_html=True
+        st.markdown("<div style='text-align: center;'><p style='font-size: 1.2em;'>Olá! Eu sou o <strong>Max</strong>, seu assistente de IA para impulsionar o sucesso da sua empresa.</p></div>", unsafe_allow_html=True)
         
 ## --- INÍCIO DO SUB-MÓDULO 5.1: MaxMarketing Total --- ##
 
