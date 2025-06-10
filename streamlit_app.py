@@ -389,7 +389,29 @@ class MaxAgente:
         if main_image_b64:
             # Assumindo que o placeholder de vídeo será o local da imagem principal por enquanto
             instrucoes.append(f"2. Encontre o comentário `` e substitua-o por esta tag de imagem: `<img src='data:image/jpeg;base64,{main_image_b64}' alt='Imagem Principal do Produto' style='width: 100%; height: auto; border-radius: 8px; margin-top: 20px;'>`")
-        
+        class MaxAgente:
+    # ... (todos os métodos que já existem, como __init__, exibir_max_marketing_total, exibir_max_construtor, etc.) ...
+
+    def get_prompt_refinamento(self, html_base, logo_b64, main_image_b64):
+        # Este é o último método que você tem atualmente.
+        ...
+        return f"""..."""
+
+    ## --- COLE O BLOCO 5.3 EXATAMENTE AQUI, ALINHADO COM OS OUTROS MÉTODOS --- ##
+    
+    def exibir_max_financeiro(self):
+        st.header("💰 MaxFinanceiro")
+        st.info("Em breve: Ferramentas para análise financeira e precificação.")
+
+    def exibir_max_administrativo(self):
+        # ... e assim por diante para todos os outros.
+        ...
+
+# A CLASSE MaxAgente TERMINA AQUI
+
+# A função main() começa aqui fora.
+def main():
+    ...
         if not instrucoes:
             return None # Retorna None se não houver nada a fazer
 
