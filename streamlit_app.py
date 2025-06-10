@@ -384,16 +384,28 @@ class MaxAgente:
 
     def get_prompt_refinamento(self, html_base, logo_b64, main_image_b64):
         instrucoes = []
-        if logo_b64: instrucoes.append(f"1. Encontre o comentário `` e substitua-o por esta tag de imagem: `<img src='data:image/png;base64,{logo_b64}' alt='Logo da Empresa' style='max-height: 70px;'>`")
-        if main_image_b64: instrucoes.append(f"2. Encontre o comentário `` e substitua-o por esta tag de imagem: `<img src='data:image/jpeg;base64,{main_image_b64}' alt='Imagem Principal do Produto' style='width: 100%; height: auto; border-radius: 8px;'>`")
-        if not instrucoes: return None
+        if logo_b64:
+            instrucoes.append(f"1. Encontre o comentário `` e substitua-o por esta tag de imagem: `<img src='data:image/png;base64,{logo_b64}' alt='Logo da Empresa' style='max-height: 70px;'>`")
+        if main_image_b64:
+            instrucoes.append(f"2. Encontre o comentário `` e substitua-o por esta tag de imagem: `<img src='data:image/jpeg;base64,{main_image_b64}' alt='Imagem Principal do Produto' style='width: 100%; height: auto; border-radius: 8px;'>`")
+        
+        if not instrucoes:
+            return None
+
         instrucao_str = "\n".join(instrucoes)
-        return f"""
-**Instrução Mestra:** Você é um desenvolvedor web sênior que refatora um código HTML existente.
-**Tarefa:** Receba um código HTML base e um conjunto de instruções. Aplique as instruções para substituir os placeholders de comentário pelas tags de imagem fornecidas.
-**CÓDIGO HTML BASE:**
-```html
-{html_base}
+
+        # AQUI ESTÁ A MUDANÇA: usando parênteses em vez de aspas triplas
+        return (
+            "**Instrução Mestra:** Você é um desenvolvedor web sênior que refatora um código HTML existente.\n"
+            "**Tarefa:** Receba um código HTML base e um conjunto de instruções. Aplique as instruções para substituir os placeholders de comentário pelas tags de imagem fornecidas.\n\n"
+            "**CÓDIGO HTML BASE:**\n"
+            "```html\n"
+            f"{html_base}\n"
+            "```\n\n"
+            "**INSTRUÇÕES DE MODIFICAÇÃO:**\n"
+            f"{instrucao_str}\n\n"
+            "**Diretiva Final:** Retorne **APENAS O NOVO CÓDIGO HTML COMPLETO**, começando com `<!DOCTYPE html>` e terminando com `</html>`. NÃO inclua explicações ou aspas de formatação."
+        )
 
 # 6. ESTRUTURA PRINCIPAL E EXECUÇÃO DO APP
 # ==============================================================================
