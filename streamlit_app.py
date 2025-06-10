@@ -115,9 +115,8 @@ class MaxAgente:
     # DENTRO DA CLASSE MaxAgente, SUBSTITUA ESTE MÉTODO:
     
     def exibir_max_marketing_total(self):
-    st.header("🚀 MaxMarketing Total")
-    st.caption("Seu copiloto para criar posts, campanhas completas e muito mais!")
-    st.markdown("---")
+        st.header("🚀 MaxMarketing Total"); st.caption("Seu copiloto para criar posts, campanhas completas e muito mais!")
+        st.markdown("---")
 
     # Gerenciamento de Estado
     session_key_post = f"mkt_post_{APP_KEY_SUFFIX}"
