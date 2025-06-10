@@ -309,8 +309,8 @@ class MaxAgente:
     ## --- SUB-MÓDULO 5.5: MaxTrainer IA --- ##
 
     def exibir_onboarding_trainer(self):
-        st.title("Bem-vindo ao seu Mentor Pessoal!")
-        st.markdown(PROMPTS_CONFIG.get('trainer', {}).get('onboarding_intro', "Olá! Eu sou o seu mentor pessoal de IA. Para que nossas conversas sejam mais produtivas, me conte sobre um assunto que você gosta ou domina fora do trabalho."))
+        st.title("Quase lá! Vamos personalizar sua experiência.")
+        st.markdown("Para que suas interações com o Max IA sejam perfeitas, me conte sobre um assunto que você gosta. Assim, posso te explicar os conceitos mais complexos de negócios de um jeito que faça sentido para você.")
         opcoes_analogia = ["Futebol", "Culinária", "Carros", "Cinema e Séries", "Música", "Moda", "Negócios (tradicional)"]
         dominio_escolhido = st.selectbox(
             "Para que eu possa te explicar tudo de um jeito que faça sentido para você, escolha um assunto abaixo:",
