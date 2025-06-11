@@ -142,7 +142,43 @@ class MaxAgente:
                             except Exception as e:
                                 st.error(f"Ocorreu um erro ao calibrar sua empresa: {e}")
 
-    def exibir_onboarding_trainer(self):
+   # COLE ESTE BLOCO CORRIGIDO NO LUGAR DO QUE VOCÊ JUNTOU
+
+def exibir_onboarding_trainer(self):
+    st.title("Quase lá! Vamos personalizar sua experiência.")
+    st.markdown("Para que suas interações com o Max IA sejam perfeitas, me conte sobre um assunto que você gosta. Assim, posso te explicar os conceitos mais complexos de negócios de um jeito que faça sentido para você.")
+    opcoes_analogia = ["Futebol", "Culinária", "Carros", "Cinema e Séries", "Música", "Moda", "Negócios (tradicional)"]
+    dominio_escolhido = st.selectbox(
+        "Para que eu possa te explicar tudo de um jeito que faça sentido para você, escolha um assunto abaixo:",
+        opcoes_analogia,
+        key="analogy_choice"
+    )
+    if st.button("Salvar e Continuar", key="save_analogy_domain"):
+        user_uid = st.session_state.get('user_uid')
+        if user_uid and self.db:
+            try:
+                user_ref = self.db.collection(USER_COLLECTION).document(user_uid)
+                user_ref.update({"analogy_domain": dominio_escolhido.lower()})
+                st.success(f"Ótima escolha! Agora vamos falar a mesma língua. Redirecionando...")
+                st.session_state['start_guided_tour'] = True
+                time.sleep(2)
+                st.rerun()
+            except Exception as e:
+                st.error(f"Erro ao salvar sua preferência: {e}")
+        else:
+            st.error("Não foi possível salvar. UID do usuário não encontrado.")
+
+# A NOVA FUNÇÃO COMEÇA AQUI, NO MESMO NÍVEL DA ANTERIOR
+def exibir_tour_guiado(self):
+    # 1º NÍVEL DE RECUO: Este código pertence à função "exibir_tour_guiado"
+    st.title("🎉 Bem-vindo ao seu Centro de Comando!")
+    st.markdown("Eu sou o Max, seu copiloto de IA. Minha missão é te ajudar a tomar as melhores decisões.")
+    st.info("Passei os últimos segundos analisando os dados da sua 'calibração' e preparei a plataforma para você. Note que o menu à esquerda já está disponível.")
+    
+    if st.button("Entendido, vamos começar!"):
+        # 2º NÍVEL DE RECUO: Este código só roda se o botão for clicado
+        st.session_state['start_guided_tour'] = False
+        st.rerun()
         st.title("Quase lá! Vamos personalizar sua experiência.")
         st.markdown("Para que suas interações com o Max IA sejam perfeitas, me conte sobre um assunto que você gosta. Assim, posso te explicar os conceitos mais complexos de negócios de um jeito que faça sentido para você.")
         opcoes_analogia = ["Futebol", "Culinária", "Carros", "Cinema e Séries", "Música", "Moda", "Negócios (tradicional)"]
@@ -154,6 +190,7 @@ class MaxAgente:
                     user_ref = self.db.collection(USER_COLLECTION).document(user_uid)
                     user_ref.update({"analogy_domain": dominio_escolhido.lower()})
                     st.success(f"Ótima escolha! Agora vamos falar a mesma língua. Redirecionando...")
+                    st.session_state['start_guided_tour'] = True
                     time.sleep(2)
                     st.rerun()
                 except Exception as e:
