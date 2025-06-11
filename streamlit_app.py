@@ -514,7 +514,141 @@ class MaxAgente:
             use_container_width=True
         )
 
-    def exibir_max_marketing_total(self): st.info("🚀 Agente MaxMarketing Total em desenvolvimento.")
+        # --- 5.7: MaxMarketing Total ---
+    def exibir_max_marketing_total(self):
+        st.header("🚀 Estúdio de Criação Max")
+        st.caption("Seu Diretor de Marketing Pessoal para criar posts, campanhas e anúncios que vendem.")
+        st.markdown("---")
+        
+        # --- Estrutura de Abas (Wizard) ---
+        tab_post, tab_campaign, tab_ads = st.tabs([
+            "✍️ Criar Post Rápido", "🎯 Criar Campanha Completa", "⚡ Criar Anúncio Rápido"
+        ])
+
+        # --- Aba 1: Criar Post ---
+        with tab_post:
+            st.subheader("Gerador de Conteúdo Criativo")
+            st.write("Ideal para manter suas redes sociais ativas e interessantes no dia a dia.")
+
+            with st.form("post_briefing_form"):
+                post_idea = st.text_area("Sobre o que é o post de hoje? Me dê uma ideia simples.", "Ex: Promoção de 20% na limpeza de sofá.")
+                post_channel = st.selectbox("Para qual canal você quer criar primeiro?", ["Instagram", "Facebook", "TikTok", "YouTube (Roteiro Curto)"])
+                
+                submitted = st.form_submit_button("💡 Gerar Pacote de Mídia com Max IA")
+                if submitted:
+                    with st.spinner("Max está buscando inspiração e criando seu conteúdo..."):
+                        time.sleep(2) # Simula o processamento da IA
+                        st.success("Pacote de Mídia gerado!")
+                        
+                        # --- Pacote de Mídia Gerado ---
+                        st.markdown("---")
+                        st.subheader("✅ Seu Pacote de Mídia para 'Limpeza de Sofá'")
+
+                        # Guia de Formatos
+                        tab_feed, tab_stories, tab_image = st.tabs(["📷 Para o Feed", "📱 Para Stories/Reels", "🖼️ Sugestão de Imagem (IA)"])
+
+                        with tab_feed:
+                            st.write("**Opção 1 (Foco no Benefício):**")
+                            st.info("🛋️✨ Seu sofá, novo de novo! Manchas e sujeira somem como mágica. Deixe sua sala mais aconchegante e sua família mais saudável. Aproveite nossos 20% OFF e respire alívio! Link na bio.")
+                            
+                            st.write("**Opção 2 (Foco na Urgência):**")
+                            st.warning("⚠️ ÚLTIMA SEMANA! Não deixe seu sofá passar o fim de semana pedindo socorro. Agende agora e garanta 20% de desconto na limpeza completa. Vagas limitadas!")
+                            
+                            st.write("**Hashtags Sugeridas:**")
+                            st.caption("#limpezadesofa #sofalimpo #higienizacao #casa #decor #promocao")
+
+                        with tab_stories:
+                            st.write("**Roteiro para Vídeo Curto (15s):**")
+                            st.code("""
+Cena 1 (2s): Close em uma mancha de vinho em um sofá.
+   Texto na tela: "Acidentes acontecem..."
+
+Cena 2 (3s): Vídeo acelerado de um profissional limpando o sofá.
+   Texto: "...mas a solução é rápida!"
+
+Cena 3 (5s): O sofá limpo e impecável, com a família sorrindo.
+   Texto: "20% OFF na limpeza de sofá. Link na bio!"
+
+Áudio Sugerido: Use este áudio em alta para aumentar o alcance: [Nome do Áudio em Alta no Momento]
+                            """, language="markdown")
+
+                        with tab_image:
+                            st.image("https://images.pexels.com/photos/4352247/pexels-photo-4352247.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+                                     caption="Imagem gerada por IA: 'Sofá visivelmente limpo e brilhante em uma sala de estar aconchegante'.")
+        
+        # --- Aba 2: Criar Campanha ---
+        with tab_campaign:
+            st.subheader("Estrategista de Mídia Digital")
+            st.write("Para quando você tem um objetivo claro e um orçamento para investir.")
+
+            with st.form("campaign_form"):
+                campaign_objective = st.selectbox("Qual é o seu principal objetivo?", ["Vender mais um produto", "Trazer mais gente para a loja física", "Receber mais mensagens no WhatsApp"])
+                campaign_budget = st.number_input("Quanto você gostaria de investir (R$)?", min_value=50, value=300, step=50)
+                campaign_duration = st.slider("Por quantos dias?", 1, 30, 5)
+                
+                submitted = st.form_submit_button("🤖 Montar Estratégia com Max IA")
+                if submitted:
+                    with st.spinner("Max está analisando o mercado e montando sua estratégia..."):
+                        time.sleep(2)
+                        st.success("Estratégia de Campanha Pronta!")
+                        
+                        st.markdown("---")
+                        st.subheader("🎯 Seu Plano de Ação Estratégico")
+                        
+                        st.info(f"""
+                        **Recomendação de Canais:**
+                        Com R$ {campaign_budget:.2f} para {campaign_duration} dias, minha sugestão é focar:
+                        - **70% (R$ {campaign_budget*0.7:.2f}) no Instagram/Facebook:** Ótimo para segmentar por localização e interesses.
+                        - **30% (R$ {campaign_budget*0.3:.2f}) na Rede de Pesquisa do Google:** Para capturar quem busca ativamente por você.
+                        """)
+                        
+                        st.success("""
+                        **Definição de Público Simplificada (IA):**
+                        Vou mostrar seus anúncios para:
+                        - Pessoas de **22 a 50 anos** que moram ou trabalham a até **3km** do seu endereço.
+                        - Pessoas com interesse em **'café especial', 'brunch' e 'livros'**.
+                        - Um **'Público Semelhante'** aos seus melhores clientes cadastrados na sua Central do Cliente 360°.
+                        """)
+                        st.markdown("**Anúncios Sugeridos:**")
+                        st.image("https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1", caption="Anúncio 1: Foco no ambiente aconchegante.", width=300)
+
+        # --- Aba 3: Criar Anúncio Rápido ---
+        with tab_ads:
+            st.subheader("Especialista Google Simplificado")
+            st.write("Coloque sua empresa no topo do Google sem complicações.")
+            
+            user_search_term = st.text_input("O que uma pessoa digitaria no Google para te encontrar?", "eletricista 24 horas em Juiz de Fora")
+            
+            if st.button("🔍 Gerar Anúncios de Alta Performance"):
+                with st.spinner("Max está pesquisando as melhores palavras e criando seus anúncios..."):
+                    time.sleep(2)
+                    st.success("Anúncios prontos para o Google!")
+                    
+                    st.markdown("---")
+                    st.subheader("✅ Seus Anúncios para o Google")
+                    
+                    with st.expander("Palavras-Chave Encontradas pela IA"):
+                        st.write([
+                            "eletricista 24 horas juiz de fora", "eletricista de emergência jf", 
+                            "conserto elétrico urgente", "eletricista perto de mim agora", "eletricista residencial jf"
+                        ])
+                    
+                    with st.container(border=True):
+                        st.write("**Anúncio 1 (Foco em Velocidade):**")
+                        st.markdown("> **Eletricista 24h em Juiz de Fora | Atendimento Rápido**")
+                        st.caption("Problema Elétrico? Chegamos em até 40 Min. Atendemos todos os bairros. Orçamento grátis pelo WhatsApp!")
+                    
+                    with st.container(border=True):
+                        st.write("**Anúncio 2 (Foco em Solução):**")
+                        st.markdown("> **Conserto Elétrico Urgente | Eletricista JF 24h**")
+                        st.caption("Curto-circuito, tomadas ou chuveiro? Resolva agora com segurança. Aceitamos cartão e PIX. Chame agora!")
+                    
+                    st.markdown("---")
+                    st.warning("""
+                    **Otimização Contínua do Max (após 3 dias):**
+                    "O anúncio com o título **'Chegamos em 40 Min.'** está trazendo 50% mais cliques. Recomendo pausar os outros e direcionar toda a verba para ele. Você aprova?"
+                    """)
+
         # --- 5.4: MaxTrainer IA ---
     def exibir_max_trainer_ia(self):
         st.title("🎓 MaxTrainer IA")
