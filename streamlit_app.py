@@ -237,7 +237,172 @@ class MaxAgente:
                 st.write("Vamos enviar uma campanha de reativação com o título 'Estamos com saudades!' e frete grátis?")
                 if st.button("Criar Campanha de Reativação"):
                      st.toast("Campanha de Reativação enviada!")
-    def exibir_max_construtor(self): st.info("🏗️ Agente Max Construtor em desenvolvimento.")
+        # --- 5.5: Max Construtor ---
+    def exibir_max_construtor(self):
+        st.header("🏗️ Max Construtor")
+        st.caption("Crie páginas de venda de alta conversão com poucos cliques.")
+        st.markdown("---")
+
+        # Inicializar o estado da sessão para o construtor
+        if 'construtor_state' not in st.session_state:
+            st.session_state.construtor_state = {
+                'theme_color': 'Azul Moderno',
+                'theme_font': 'Poppins',
+                'logo_b64': None,
+                'header_pitch': 'A solução definitiva para o seu negócio crescer!',
+                'whatsapp': '',
+                'youtube': '',
+                'instagram': '',
+                'facebook': '',
+                'products': [],
+                'footer_text': f"© {datetime.date.today().year} Sua Empresa | Todos os direitos reservados."
+            }
+        
+        state = st.session_state.construtor_state
+
+        # --- Layout de duas colunas ---
+        col1, col2 = st.columns([1, 1.2])
+
+        # --- COLUNA 1: Painel de Controle ---
+        with col1:
+            st.subheader("Painel de Controle")
+
+            with st.expander("1. Configurações Gerais", expanded=True):
+                state['theme_color'] = st.selectbox("Paleta de Cores", ["Azul Moderno", "Verde Crescimento", "Roxo Inovação", "Cinza Corporativo"])
+                state['theme_font'] = st.selectbox("Fonte", ["Poppins", "Roboto", "Lato", "Open Sans"])
+
+            with st.expander("2. Cabeçalho e Logo", expanded=True):
+                uploaded_logo = st.file_uploader("Logomarca (PNG, JPG)", type=['png', 'jpg'])
+                if uploaded_logo:
+                    state['logo_b64'] = base64.b64encode(uploaded_logo.getvalue()).decode()
+                state['header_pitch'] = st.text_area("Pitch de Vendas (abertura)", value=state['header_pitch'])
+
+            with st.expander("3. Links e Contato"):
+                state['whatsapp'] = st.text_input("Nº WhatsApp (Ex: 5511912345678)", value=state['whatsapp'])
+                state['youtube'] = st.text_input("URL YouTube", value=state['youtube'])
+                state['instagram'] = st.text_input("URL Instagram", value=state['instagram'])
+                state['facebook'] = st.text_input("URL Facebook", value=state['facebook'])
+
+            with st.expander("4. Produtos/Serviços"):
+                with st.form("product_form"):
+                    st.write("Adicionar novo produto/serviço")
+                    product_name = st.text_input("Nome do Produto")
+                    product_photo = st.file_uploader("Foto do Produto", type=['png', 'jpg'])
+                    product_desc = st.text_area("Descrição")
+                    submitted = st.form_submit_button("Adicionar Produto")
+                    if submitted and product_name and product_photo and product_desc:
+                        if len(state['products']) < 18:
+                            photo_b64 = base64.b64encode(product_photo.getvalue()).decode()
+                            state['products'].append({
+                                'name': product_name,
+                                'photo_b64': photo_b64,
+                                'desc': product_desc
+                            })
+                            st.success(f"Produto '{product_name}' adicionado!")
+                        else:
+                            st.warning("Limite de 18 produtos atingido.")
+                
+                if state['products']:
+                    st.write("Produtos Adicionados:")
+                    for i, prod in enumerate(state['products']):
+                        c1, c2 = st.columns([3, 1])
+                        c1.write(f"_{prod['name']}_")
+                        if c2.button("Remover", key=f"del_{i}", use_container_width=True):
+                            state['products'].pop(i)
+                            st.rerun()
+
+
+            with st.expander("5. Rodapé"):
+                state['footer_text'] = st.text_input("Texto de Assinatura/Contato", value=state['footer_text'])
+
+        # --- COLUNA 2: Pré-visualização ---
+        with col2:
+            st.subheader("Pré-visualização da Página")
+
+            # Mapeamento de temas para cores
+            color_map = {
+                'Azul Moderno': {'primary': '#2563eb', 'secondary': '#dbeafe', 'text': '#1e40af', 'bg': '#eff6ff'},
+                'Verde Crescimento': {'primary': '#16a34a', 'secondary': '#dcfce7', 'text': '#14532d', 'bg': '#f0fdf4'},
+                'Roxo Inovação': {'primary': '#7c3aed', 'secondary': '#f3e8ff', 'text': '#581c87', 'bg': '#faf5ff'},
+                'Cinza Corporativo': {'primary': '#475569', 'secondary': '#e2e8f0', 'text': '#1e293b', 'bg': '#f8fafc'},
+            }
+            font_map = {
+                'Poppins': 'Poppins, sans-serif',
+                'Roboto': 'Roboto, sans-serif',
+                'Lato': 'Lato, sans-serif',
+                'Open Sans': 'Open Sans, sans-serif'
+            }
+
+            colors = color_map[state['theme_color']]
+            font_family = font_map[state['theme_font']]
+
+            # Montando o HTML da pré-visualização
+            logo_html = f"<img src='data:image/png;base64,{state['logo_b64']}' style='max-height: 80px; margin: 0 auto 1rem;'>" if state['logo_b64'] else ""
+            
+            social_links_html = ""
+            if any([state['youtube'], state['instagram'], state['facebook']]):
+                social_links_html += "<div style='display: flex; justify-content: center; gap: 1rem; margin-top: 1rem;'>"
+                if state['youtube']: social_links_html += "<a href='#' style='font-size: 2rem; text-decoration: none;'>▶️</a>"
+                if state['instagram']: social_links_html += "<a href='#' style='font-size: 2rem; text-decoration: none;'>📸</a>"
+                if state['facebook']: social_links_html += "<a href='#' style='font-size: 2rem; text-decoration: none;'>👍</a>"
+                social_links_html += "</div>"
+
+            products_html = ""
+            if state['products']:
+                for prod in state['products']:
+                    products_html += f"""
+                    <div style="background-color: {colors['bg']}; border-left: 4px solid {colors['primary']}; border-radius: 8px; padding: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                        <img src="data:image/png;base64,{prod['photo_b64']}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 4px; margin-bottom: 1rem;">
+                        <h4 style="font-weight: bold; color: {colors['text']}; margin: 0 0 0.5rem 0;">{prod['name']}</h4>
+                        <p style="font-size: 0.9rem; color: #4a5568;">{prod['desc']}</p>
+                    </div>
+                    """
+            else:
+                products_html = "<p style='text-align: center; color: #9ca3af;'>Seus produtos aparecerão aqui.</p>"
+
+            whatsapp_html = ""
+            if state['whatsapp']:
+                whatsapp_html = f"""
+                <div style='text-align: center; margin-top: 2rem;'>
+                    <a href='#' style='background-color: {colors['primary']}; color: white; padding: 0.75rem 1.5rem; border-radius: 9999px; text-decoration: none; font-weight: bold;'>
+                        Fale Conosco no WhatsApp
+                    </a>
+                </div>
+                """
+
+            # Container da pré-visualização com estilo de folha A4
+            with st.container():
+                html_to_render = f"""
+                <div style="border: 1px solid #e2e8f0; box-shadow: 0 10px 25px rgba(0,0,0,0.1); font-family: {font_family}; aspect-ratio: 210/297; padding: 2rem; background-color: white;">
+                    <header style="background-color: {colors['primary']}; color: white; text-align: center; padding: 2rem; border-radius: 8px 8px 0 0;">
+                        {logo_html}
+                        <h2 style="font-size: 1.8rem; font-weight: bold; margin: 0;">{state['header_pitch']}</h2>
+                        {social_links_html}
+                    </header>
+                    <main style="padding: 2rem 0;">
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                            {products_html}
+                        </div>
+                        {whatsapp_html}
+                    </main>
+                    <footer style="background-color: {colors['secondary']}; text-align: center; padding: 1rem; font-size: 0.75rem; color: #374151; border-top: 2px solid {colors['primary']}; border-radius: 0 0 8px 8px;">
+                        {state['footer_text']}
+                    </footer>
+                </div>
+                """
+                st.markdown(html_to_render, unsafe_allow_html=True)
+
+        # --- Ação de Download ---
+        # A lógica de download em PDF precisaria ser reimplementada em Python
+        # Esta é uma versão simplificada
+        st.download_button(
+            label="📥 Baixar Página em PDF (Simplificado)",
+            data="Esta é uma prévia. A funcionalidade completa de PDF usaria os dados acima.",
+            file_name="pagina_vendas.txt",
+            mime="text/plain",
+            use_container_width=True
+        )
+
     def exibir_max_marketing_total(self): st.info("🚀 Agente MaxMarketing Total em desenvolvimento.")
         # --- 5.4: MaxTrainer IA ---
     def exibir_max_trainer_ia(self):
