@@ -1,6 +1,8 @@
 streamlit
 firebase-admin
 pyrebase4
+google-cloud-storage
+setuptools
 langchain-google-genai
 Pillow
 python-docx
