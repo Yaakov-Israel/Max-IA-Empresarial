@@ -179,7 +179,118 @@ class MaxAgente:
 
 
     # --- Demais agentes como placeholders ou funcionalidades simplificadas ---
-    def exibir_max_financeiro(self): st.info("💰 Agente MaxFinanceiro em desenvolvimento.")
+        # --- 5.2: MaxFinanceiro ---
+    def exibir_max_financeiro(self):
+        st.header("💰 MaxFinanceiro")
+        st.caption("O Cérebro Financeiro da sua empresa em Tempo Real.")
+
+        # --- Abas para navegação interna do módulo ---
+        tab_visao_geral, tab_detalhes, tab_precificador, tab_guardiao, tab_relatorio = st.tabs([
+            "📊 Visão Geral", "💸 Fluxo de Caixa", "💡 Precificador IA", "🛡️ Guardião das Contas", "📄 Boletim Financeiro"
+        ])
+
+        # --- Dados Simulados para o Módulo ---
+        state = {
+            'todaySales': 1250.75,
+            'accountsReceivable': 7500.50,
+            'cashBalance': 12345.67,
+            'transactions': pd.DataFrame({
+                'Data': pd.to_datetime(pd.date_range(end=datetime.date.today(), periods=10)),
+                'Descrição': ['Venda POS', 'Fornecedor ABC', 'Venda Online', 'Salários', 'Venda PIX', 'Aluguel', 'Venda POS', 'Fornecedor XYZ', 'Venda Online', 'Taxas'],
+                'Tipo': ['Entrada', 'Saída', 'Entrada', 'Saída', 'Entrada', 'Saída', 'Entrada', 'Saída', 'Entrada', 'Saída'],
+                'Valor': [550.20, -450.00, 890.50, -3500.00, 320.00, -1800.00, 430.10, -320.80, 1250.00, -150.45]
+            }),
+            'products': [
+                {'id': 1, 'name': 'Prato do Dia', 'cost': 10.50, 'price': 35.00, 'sales': 25},
+                {'id': 2, 'name': 'Suco Especial', 'cost': 4.00, 'price': 10.00, 'sales': 40},
+                {'id': 3, 'name': 'Serviço de Consultoria', 'cost': 50.00, 'price': 250.00, 'sales': 5},
+            ]
+        }
+
+        # --- Conteúdo da Aba: Visão Geral ---
+        with tab_visao_geral:
+            st.subheader("Painel de Controle Financeiro")
+            col1, col2, col3 = st.columns(3)
+            col1.metric("Vendas do Dia", f"R$ {state['todaySales']:,.2f}", "12%")
+            col2.metric("Contas a Receber", f"R$ {state['accountsReceivable']:,.2f}")
+            col3.metric("Saldo em Caixa", f"R$ {state['cashBalance']:,.2f}", "- R$ 250,00")
+            
+            st.markdown("---")
+            
+            col1, col2 = st.columns([2, 1])
+            with col1:
+                st.subheader("Fluxo de Caixa (Últimos 30 dias)")
+                # Gráfico de Fluxo de Caixa
+                df_cashflow = state['transactions'].copy()
+                df_cashflow['Data'] = pd.to_datetime(df_cashflow['Data'])
+                df_cashflow['Entrada'] = df_cashflow['Valor'].clip(lower=0)
+                df_cashflow['Saída'] = df_cashflow['Valor'].clip(upper=0).abs()
+                df_cashflow = df_cashflow.groupby(pd.Grouper(key='Data', freq='D'))[['Entrada', 'Saída']].sum().reset_index()
+
+                fig = go.Figure()
+                fig.add_trace(go.Bar(x=df_cashflow['Data'], y=df_cashflow['Entrada'], name='Entradas', marker_color='#10b981'))
+                fig.add_trace(go.Bar(x=df_cashflow['Data'], y=df_cashflow['Saída'], name='Saídas', marker_color='#ef4444'))
+                fig.update_layout(barmode='group', xaxis_title='Data', yaxis_title='Valor (R$)', margin=dict(l=20, r=20, t=20, b=20), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+                st.plotly_chart(fig, use_container_width=True)
+
+            with col2:
+                st.subheader("💡 Alertas do Agente Max")
+                with st.container(border=True):
+                    st.warning("Atenção: se o ritmo de saídas continuar, seu caixa pode ficar negativo em aprox. 12 dias.")
+                with st.container(border=True):
+                    st.success("Seu 'Suco Especial' tem uma margem baixa. Que tal criar um combo com o 'Prato do Dia'?")
+
+        # --- Conteúdo da Aba: Fluxo de Caixa Detalhado ---
+        with tab_detalhes:
+            st.subheader("Últimas Transações Registradas")
+            st.dataframe(state['transactions'].style.format({"Valor": "R$ {:,.2f}"}), use_container_width=True)
+
+        # --- Conteúdo da Aba: Precificador IA ---
+        with tab_precificador:
+            st.subheader("Análise de Margem por Produto")
+            for prod in state['products']:
+                margin = ((prod['price'] - prod['cost']) / prod['price']) * 100
+                with st.container(border=True):
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        st.markdown(f"**{prod['name']}**")
+                        st.caption(f"Preço: R$ {prod['price']:.2f} | Custo: R$ {prod['cost']:.2f}")
+                    with col2:
+                        st.metric("Margem de Contribuição", f"{margin:.1f}%", delta=f"{(margin-50):.1f}% vs Meta" if margin < 50 else None)
+
+        # --- Conteúdo da Aba: Guardião das Contas ---
+        with tab_guardiao:
+            st.subheader("Monitoramento de Transações")
+            st.info("O Agente Max monitora suas contas e sinaliza transações que precisam de atenção.")
+            with st.container(border=True):
+                st.error("⚠️ **Despesa Suspeita:** Identificamos uma compra de R$ 55,90 na 'Netflix.com' com o cartão da empresa. Esta parece ser uma despesa pessoal. Recomendo reclassificar ou reembolsar.")
+            with st.container(border=True):
+                st.write("✅ **Transação Normal:** Compra de R$ 450,00 no 'Fornecedor ABC' (Conta PJ).")
+
+        # --- Conteúdo da Aba: Boletim Financeiro ---
+        with tab_relatorio:
+            st.subheader("Seu Check-up Financeiro Mensal")
+            dre_simplificada = f"""
+            **DRE Simplificada (Últimos 30 dias)**
+            --------------------------------------
+            Receita Total: R$ 25,450.00
+            Custos Variáveis: (R$ 8,100.00)
+            --------------------------------------
+            Margem de Contribuição: R$ 17,350.00
+            Despesas Fixas: (R$ 11,500.00)
+            --------------------------------------
+            **Lucro Operacional: R$ 5,850.00**
+            """
+            st.code(dre_simplificada, language="markdown")
+            
+            st.download_button(
+                label="📥 Gerar Relatório para Crédito (PDF)",
+                data="Este é um relatório simplificado gerado pelo Max IA.", # A lógica de geração do PDF já existe
+                file_name="relatorio_credito_max_ia.txt",
+                mime="text/plain",
+                use_container_width=True
+            )
+
         # --- 5.3: Central do Cliente 360° ---
     def exibir_central_cliente(self):
         st.header("📈 Central do Cliente 360°")
