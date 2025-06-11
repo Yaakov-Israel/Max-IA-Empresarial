@@ -180,10 +180,108 @@ class MaxAgente:
 
     # --- Demais agentes como placeholders ou funcionalidades simplificadas ---
     def exibir_max_financeiro(self): st.info("💰 Agente MaxFinanceiro em desenvolvimento.")
-    def exibir_central_cliente(self): st.info("📈 Agente Central do Cliente 360° em desenvolvimento.")
+        # --- 5.3: Central do Cliente 360° ---
+    def exibir_central_cliente(self):
+        st.header("📈 Central do Cliente 360°")
+        st.caption("Transforme dados em relacionamentos e fidelização.")
+
+        # --- KPIs ---
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Satisfação (NPS)", "72", "Excelente")
+        col2.metric("Taxa de Retenção", "85%")
+        col3.metric("Clientes em Risco", "18")
+
+        st.markdown("---")
+
+        # --- Módulos Principais ---
+        col1, col2 = st.columns([2, 1])
+
+        with col1:
+            st.subheader("👥 Cadastro de Clientes Unificado")
+            # Dados simulados para a tabela
+            customer_data = {
+                'Cliente': ['Maria Silva', 'João Pereira', 'Ana Costa', 'Carlos Souza'],
+                'Última Compra': ['08/06/2025', '05/06/2025', '10/02/2025', '09/06/2025'],
+                'Status': ['Campeão', 'Fiel', 'Em Risco', 'Novo'],
+                'Ticket Médio': [150.75, 89.90, 45.50, 199.00]
+            }
+            df_customers = pd.DataFrame(customer_data)
+            st.dataframe(df_customers, use_container_width=True)
+            st.info("💡 Insight do Max: Vejo que a Maria Silva (cliente 'Campeão') sempre compra o 'Produto X'. Que tal oferecer o 'Produto Y', que é complementar, com um desconto?")
+
+
+        with col2:
+            st.subheader("📊 Análise de Sentimentos")
+            # Dados simulados para o gráfico
+            sentiment_data = pd.DataFrame({
+                'Tópico': ['Atendimento', 'Preço', 'Entrega'],
+                'Positivo': [15, 5, 10],
+                'Negativo': [2, 8, 5]
+            }).set_index('Tópico')
+            st.bar_chart(sentiment_data, color=["#10b981", "#ef4444"])
+
+
+        st.markdown("---")
+        st.subheader("🎯 Campanhas de Fidelidade Sugeridas pela IA")
+        col1, col2 = st.columns(2)
+        with col1:
+            with st.container(border=True):
+                st.success("**Para Clientes 'Campeões'**")
+                st.write("Que tal criar um 'Clube VIP' para seus 8 melhores clientes com um desconto exclusivo?")
+                if st.button("Criar Campanha VIP"):
+                    st.toast("Campanha VIP criada!")
+
+        with col2:
+            with st.container(border=True):
+                st.warning("**Para Clientes 'Em Risco'**")
+                st.write("Vamos enviar uma campanha de reativação com o título 'Estamos com saudades!' e frete grátis?")
+                if st.button("Criar Campanha de Reativação"):
+                     st.toast("Campanha de Reativação enviada!")
     def exibir_max_construtor(self): st.info("🏗️ Agente Max Construtor em desenvolvimento.")
     def exibir_max_marketing_total(self): st.info("🚀 Agente MaxMarketing Total em desenvolvimento.")
-    def exibir_max_trainer_ia(self): st.info("🎓 Agente MaxTrainer IA em desenvolvimento.")
+        # --- 5.4: MaxTrainer IA ---
+    def exibir_max_trainer_ia(self):
+        st.title("🎓 MaxTrainer IA")
+        st.markdown("Seu mentor pessoal para descomplicar a jornada empreendedora.")
+
+        # Inicializa o histórico do chat se não existir
+        if "messages_trainer" not in st.session_state:
+            st.session_state.messages_trainer = [{"role": "assistant", "content": "Olá! Eu sou seu mentor pessoal de IA. Sobre qual conceito de negócios você gostaria de aprender hoje? Tente perguntar 'O que é Fluxo de Caixa?' ou 'Explique Análise SWOT'."}]
+
+        # Exibe as mensagens do histórico
+        for message in st.session_state.messages_trainer:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
+
+        # Input do usuário
+        if prompt := st.chat_input("Pergunte sobre DRE, Fluxo de Caixa, Marketing..."):
+            # Adiciona a mensagem do usuário ao histórico e exibe
+            st.session_state.messages_trainer.append({"role": "user", "content": prompt})
+            with st.chat_message("user"):
+                st.markdown(prompt)
+
+            # Gera e exibe a resposta do assistente
+            with st.chat_message("assistant"):
+                with st.spinner("MaxTrainer está pensando na melhor analogia..."):
+                    try:
+                        # Em um app real, aqui você buscaria o domínio de analogia do usuário no Firebase
+                        analogy_domain = "futebol" # Usando um domínio fixo para este exemplo
+
+                        # Lógica da IA para gerar a resposta (simulada aqui)
+                        # O prompt real seria enviado ao LLM, como no seu código original
+                        if "fluxo de caixa" in prompt.lower():
+                            full_response = f"Ótima pergunta! Pensando em **{analogy_domain}**, o Fluxo de Caixa é como o **fôlego de um jogador**. As **entradas** (vendas) são os momentos de descanso e hidratação. As **saídas** (despesas) são os piques e corridas. Se ele corre mais do que descansa, uma hora fica sem fôlego! Nosso objetivo é manter seu 'jogador' com fôlego de campeão o tempo todo!"
+                        elif "swot" in prompt.lower():
+                            full_response = f"Excelente! Usando nossa analogia de **{analogy_domain}**, a Análise SWOT é como um técnico analisando seu time. **Forças**: seu atacante artilheiro. **Fraquezas**: a defesa que toma muitos gols. **Oportunidades**: o time adversário tem um jogador importante lesionado. **Ameaças**: o próximo jogo é fora de casa, com chuva forte."
+                        else:
+                            full_response = "Desculpe, ainda estou aprendendo sobre isso. Que tal tentarmos falar sobre 'Fluxo de Caixa' ou 'Análise SWOT'?"
+
+                        st.markdown(full_response)
+                        # Adiciona a resposta da IA ao histórico
+                        st.session_state.messages_trainer.append({"role": "assistant", "content": full_response})
+
+                    except Exception as e:
+                        st.error(f"Ocorreu um erro ao contatar a IA: {e}")
     
     # --- Métodos de Onboarding (simplificados para o contexto) ---
     def exibir_onboarding_calibracao(self):
