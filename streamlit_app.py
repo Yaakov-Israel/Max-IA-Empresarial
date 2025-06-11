@@ -676,10 +676,10 @@ def main():
         if st.sidebar.button("Logout", key=f"{APP_KEY_SUFFIX}_logout"):
             st.session_state.clear(); st.rerun()
         
-        opcoes_menu = {
+       opcoes_menu = {
             "👋 Bem-vindo": agente.exibir_painel_boas_vindas,
             "🏢 Central de Comando": agente.exibir_central_de_comando,
-            "💰 MaxFinanceiro": agente.exibir_max_financeiro,
+            "💰 MaxFinanceiro": agente.exibir_max_financeiro,   # <--- ADICIONE ESTA LINHA
             "📈 Central do Cliente 360°": agente.exibir_central_cliente,
             "🚀 MaxMarketing Total": agente.exibir_max_marketing_total,
             "🎓 MaxTrainer IA": agente.exibir_max_trainer_ia,
