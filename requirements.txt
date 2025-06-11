@@ -1,11 +1,9 @@
 streamlit
-Pyrebase4
-PyJWT
 firebase-admin
-google-cloud-firestore
-google-generativeai
+pyrebase4
 langchain-google-genai
 Pillow
 python-docx
 fpdf2
-setuptools
+pandas
+plotly
