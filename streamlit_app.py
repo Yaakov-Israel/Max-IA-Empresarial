@@ -648,7 +648,7 @@ def main():
     user_is_authenticated, user_uid, user_email = get_current_user_status(pb_auth_client)
 
     if user_is_authenticated:
-        # CORREÇÃO DO ERRO: a imagem da sidebar é carregada com um caminho seguro
+        # ---- Início do Bloco Corrigido ----
         logo_path = get_asset_path('max-ia-lgo.fundo.transparente.png')
         if os.path.exists(logo_path):
             st.sidebar.image(logo_path, width=100)
@@ -658,14 +658,18 @@ def main():
         
         if 'agente' not in st.session_state:
             llm = get_llm()
-            if llm and firestore_db: st.session_state.agente = MaxAgente(llm, firestore_db)
-            else: st.error("Agente Max IA não pôde ser inicializado."); st.stop()
+            if llm and firestore_db: 
+                st.session_state.agente = MaxAgente(llm, firestore_db)
+            else: 
+                st.error("Agente Max IA não pôde ser inicializado."); st.stop()
+        
         agente = st.session_state.agente
         
         try:
             user_doc = firestore_db.collection(USER_COLLECTION).document(user_uid).get()
             user_data = user_doc.to_dict() if user_doc.exists else None
-        except Exception as e: st.error(f"Erro ao buscar dados do usuário: {e}"); st.stop()
+        except Exception as e: 
+            st.error(f"Erro ao buscar dados do usuário: {e}"); st.stop()
 
         if not user_data: 
             user_data = {"email": user_email, "access_level": 2}
@@ -676,10 +680,10 @@ def main():
         if st.sidebar.button("Logout", key=f"{APP_KEY_SUFFIX}_logout"):
             st.session_state.clear(); st.rerun()
         
-       opcoes_menu = {
+        opcoes_menu = {
             "👋 Bem-vindo": agente.exibir_painel_boas_vindas,
             "🏢 Central de Comando": agente.exibir_central_de_comando,
-            "💰 MaxFinanceiro": agente.exibir_max_financeiro,   # <--- ADICIONE ESTA LINHA
+            "💰 MaxFinanceiro": agente.exibir_max_financeiro,
             "📈 Central do Cliente 360°": agente.exibir_central_cliente,
             "🚀 MaxMarketing Total": agente.exibir_max_marketing_total,
             "🎓 MaxTrainer IA": agente.exibir_max_trainer_ia,
@@ -687,14 +691,16 @@ def main():
         }
         
         if user_data.get('access_level') != 1:
-            opcoes_a_remover = ["💰 MaxFinanceiro"]
+            opcoes_a_remover = ["💰 MaxFinanceiro", "🏢 Central de Comando"]
             for opcao in opcoes_a_remover:
                 if opcao in opcoes_menu: del opcoes_menu[opcao]
 
         selecao_label = st.sidebar.radio("Max Agentes IA:", list(opcoes_menu.keys()), key=f"{APP_KEY_SUFFIX}_menu")
         opcoes_menu[selecao_label]()
+        # ---- Fim do Bloco Corrigido ----
 
     else:
+        # Bloco do usuário não logado (permanece igual)
         if st.session_state.get('show_login_form', False):
             exibir_formularios_de_acesso()
         else:
