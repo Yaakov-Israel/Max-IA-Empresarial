@@ -519,7 +519,7 @@ Cena 3 (5s): O sofá limpo e impecável, com a família sorrindo.
     def exibir_tour_guiado(self): st.title("Tour Guiado...")
 
 # ==============================================================================
-# BLOCO 1: NOVAS FUNÇÕES DE INTERFACE (Ativação e Entrada)
+# 6. FUNÇÕES DA INTERFACE DE ENTRADA
 # ==============================================================================
 
 def exibir_pagina_de_ativacao():
@@ -529,7 +529,8 @@ def exibir_pagina_de_ativacao():
     with col:
         try:
             logo_path = get_asset_path('max-ia-lgo.fundo.transparente.png')
-            if os.path.exists(logo_path): st.image(logo_path, width=150)
+            if os.path.exists(logo_path):
+                st.image(logo_path, width=150)
         except Exception:
             st.title("Max IA Empresarial")
         
@@ -544,8 +545,6 @@ def exibir_pagina_de_ativacao():
                 # Aqui iria a lógica para validar a chave no Firebase
                 if activation_key: # Simulação de chave válida
                     st.success("Chave validada com sucesso! Prossiga com o registro da sua conta.")
-                    # Poderíamos redirecionar para o formulário de registro, mas por enquanto,
-                    # a mensagem de sucesso é suficiente para o protótipo.
                     st.info("Funcionalidade de registro pós-ativação em desenvolvimento.")
                 else:
                     st.error("Chave de ativação inválida ou já utilizada.")
@@ -584,7 +583,7 @@ def exibir_pagina_de_entrada():
         st.markdown("</div>", unsafe_allow_html=True)
 
 # ==============================================================================
-# BLOCO 2: NOVA ESTRUTURA PRINCIPAL E EXECUÇÃO DO APP
+# 7. ESTRUTURA PRINCIPAL E EXECUÇÃO DO APP
 # ==============================================================================
 def main():
     if not all([pb_auth_client, firestore_db]):
@@ -593,12 +592,13 @@ def main():
     user_is_authenticated, user_uid, user_email = get_current_user_status(pb_auth_client)
 
     if user_is_authenticated:
-        # --- USUÁRIO LOGADO - FLUXO PRINCIPAL DO APP ---
+        # --- CORREÇÃO À PROVA DE FALHAS: Tenta carregar a logo, mas não quebra o app se falhar ---
         try:
             logo_path = get_asset_path('max-ia-lgo.fundo.transparente.png')
             if os.path.exists(logo_path):
                 st.sidebar.image(logo_path, width=100)
         except Exception as e:
+            # Se a imagem não for encontrada, o app continua funcionando
             print(f"Alerta: Não foi possível carregar a logo da sidebar. Erro: {e}")
 
         st.sidebar.title("Max IA Empresarial")
@@ -644,7 +644,8 @@ def main():
             opcoes_permitidas_nomes = list(opcoes_menu_completo.keys())
         else:
             opcoes_permitidas_nomes = ["👋 Bem-vindo", "🎓 MaxTrainer IA"]
-            # ... (outras regras de nível)...
+            if access_level == 2: opcoes_permitidas_nomes.append("📈 Central do Cliente 360°")
+            # Adicione outras regras de nível aqui...
 
         opcoes_menu_filtrado = {nome: funcao for nome, funcao in opcoes_menu_completo.items() if nome in opcoes_permitidas_nomes}
 
