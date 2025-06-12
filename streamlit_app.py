@@ -587,7 +587,7 @@ def exibir_formularios_de_acesso():
                     else: st.warning("Preencha todos os campos corretamente.")
 
 # ==============================================================================
-# 7. ESTRUTURA PRINCIPAL E EXECUÇÃO DO APP (À PROVA DE FALHAS)
+# 7. ESTRUTURA PRINCIPAL E EXECUÇÃO DO APP (COM ONBOARDING)
 # ==============================================================================
 def main():
     if not all([pb_auth_client, firestore_db]):
@@ -596,6 +596,7 @@ def main():
     user_is_authenticated, user_uid, user_email = get_current_user_status(pb_auth_client)
 
     if user_is_authenticated:
+        # Tenta carregar a logo na sidebar de forma segura
         try:
             logo_path = get_asset_path('max-ia-lgo.fundo.transparente.png')
             if os.path.exists(logo_path):
@@ -619,47 +620,52 @@ def main():
         except Exception as e: st.error(f"Erro ao buscar dados do usuário: {e}"); st.stop()
 
         if not user_data: 
-            user_data = {"email": user_email, "access_level": 2}
+            user_data = {"email": user_email, "access_level": 2, "company_id": None, "analogy_domain": None}
             firestore_db.collection(USER_COLLECTION).document(user_uid).set(user_data, merge=True)
         
-        st.sidebar.write(f"Logado como: **{user_email}**")
-        st.sidebar.caption(f"Nível de Acesso: {user_data.get('access_level', 'N/D')}")
-        if st.sidebar.button("Logout", key=f"{APP_KEY_SUFFIX}_logout"):
-            st.session_state.clear(); st.rerun()
-        
-        opcoes_menu_completo = {
-            "👋 Bem-vindo": agente.exibir_painel_boas_vindas,
-            "🏢 Central de Comando": agente.exibir_central_de_comando,
-            "💰 MaxFinanceiro": agente.exibir_max_financeiro,
-            "📈 Central do Cliente 360°": agente.exibir_central_cliente,
-            "🚀 MaxMarketing Total": agente.exibir_max_marketing_total,
-            "🎓 MaxTrainer IA": agente.exibir_max_trainer_ia,
-            "🏗️ MaxConstrutor": agente.exibir_max_construtor,
-        }
-        
-        access_level = user_data.get('access_level', 2)
-        opcoes_permitidas_nomes = []
-
-        if access_level == 1:
-            opcoes_permitidas_nomes = list(opcoes_menu_completo.keys())
+        # --- LÓGICA DE ONBOARDING ---
+        if not user_data.get("company_id"):
+            # Se o usuário não tem uma empresa associada, inicia a calibração.
+            agente.exibir_onboarding_calibracao()
+        elif not user_data.get("analogy_domain"):
+            # Se já tem empresa mas não personalizou o trainer, vai para essa etapa.
+             agente.exibir_onboarding_trainer()
         else:
-            opcoes_permitidas_nomes = ["👋 Bem-vindo", "🎓 MaxTrainer IA"]
-            if access_level == 2: opcoes_permitidas_nomes.append("📈 Central do Cliente 360°")
-            elif access_level == 3: opcoes_permitidas_nomes.append("🚀 MaxMarketing Total")
-            elif access_level == 4: opcoes_permitidas_nomes.append("🏗️ MaxConstrutor")
-            elif access_level == 5: opcoes_permitidas_nomes.append("💰 MaxFinanceiro")
-            elif access_level == 6: opcoes_permitidas_nomes.append("🏢 Central de Comando")
-        
-        opcoes_menu_filtrado = {nome: funcao for nome, funcao in opcoes_menu_completo.items() if nome in opcoes_permitidas_nomes}
+            # --- APLICAÇÃO PRINCIPAL (Usuário totalmente configurado) ---
+            st.sidebar.write(f"Logado como: **{user_email}**")
+            st.sidebar.caption(f"Nível de Acesso: {user_data.get('access_level', 'N/D')}")
+            if st.sidebar.button("Logout", key=f"{APP_KEY_SUFFIX}_logout"):
+                st.session_state.clear(); st.rerun()
+            
+            # Lógica de acesso por nível
+            opcoes_menu_completo = {
+                "👋 Bem-vindo": agente.exibir_painel_boas_vindas,
+                "🏢 Central de Comando": agente.exibir_central_de_comando,
+                "💰 MaxFinanceiro": agente.exibir_max_financeiro,
+                "📈 Central do Cliente 360°": agente.exibir_central_cliente,
+                "🚀 MaxMarketing Total": agente.exibir_max_marketing_total,
+                "🎓 MaxTrainer IA": agente.exibir_max_trainer_ia,
+                "🏗️ MaxConstrutor": agente.exibir_max_construtor,
+            }
+            
+            access_level = user_data.get('access_level', 2)
+            opcoes_permitidas_nomes = []
+            if access_level == 1:
+                opcoes_permitidas_nomes = list(opcoes_menu_completo.keys())
+            else:
+                opcoes_permitidas_nomes = ["👋 Bem-vindo", "🎓 MaxTrainer IA"]
+                if access_level == 2: opcoes_permitidas_nomes.append("📈 Central do Cliente 360°")
+                # Adicione outras regras de nível aqui...
+            
+            opcoes_menu_filtrado = {nome: funcao for nome, funcao in opcoes_menu_completo.items() if nome in opcoes_permitidas_nomes}
 
-        selecao_label = st.sidebar.radio("Max Agentes IA:", list(opcoes_menu_filtrado.keys()), key=f"{APP_KEY_SUFFIX}_menu")
-        if selecao_label in opcoes_menu_filtrado:
-            opcoes_menu_filtrado[selecao_label]()
+            selecao_label = st.sidebar.radio("Max Agentes IA:", list(opcoes_menu_filtrado.keys()), key=f"{APP_KEY_SUFFIX}_menu")
+            if selecao_label in opcoes_menu_filtrado:
+                opcoes_menu_filtrado[selecao_label]()
+
     else:
+        # Usuário não logado
         if st.session_state.get('show_login_form', False):
             exibir_formularios_de_acesso()
         else:
             exibir_pagina_de_entrada()
-
-if __name__ == "__main__":
-    main()
