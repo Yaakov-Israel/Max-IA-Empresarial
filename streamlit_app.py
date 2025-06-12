@@ -282,7 +282,169 @@ Cena 3 (5s): O sofá limpo e impecável, com a família sorrindo.
                     st.warning("**Otimização Contínua do Max (após 3 dias):** \"O anúncio com o título 'Chegamos em 40 Min.' está trazendo 50% mais cliques. Recomendo pausar os outros. Você aprova?\"")
 
 
-    def exibir_max_construtor(self): st.info("🏗️ Agente MaxConstrutor em desenvolvimento.")
+        # --- 5.2: Max Construtor - Página de Venda ---
+    def exibir_max_construtor(self):
+        st.header("🏗️ Max Construtor")
+        st.caption("Crie páginas de venda de alta conversão com poucos cliques.")
+        st.markdown("---")
+
+        # Inicializar o estado da sessão para o construtor se não existir
+        if 'construtor_state' not in st.session_state:
+            st.session_state.construtor_state = {
+                'theme_color': 'Azul Moderno',
+                'theme_font': 'Poppins',
+                'logo_b64': None,
+                'header_pitch': 'A solução definitiva para o seu negócio crescer!',
+                'whatsapp': '',
+                'youtube': '',
+                'instagram': '',
+                'facebook': '',
+                'products': [],
+                'footer_text': f"© {datetime.date.today().year} Sua Empresa | Todos os direitos reservados."
+            }
+        
+        state = st.session_state.construtor_state
+
+        # --- Layout de duas colunas ---
+        col1, col2 = st.columns([1, 1.2])
+
+        # --- COLUNA 1: Painel de Controle ---
+        with col1:
+            st.subheader("Painel de Controle 🎛️")
+
+            with st.expander("1. Configurações Gerais", expanded=True):
+                state['theme_color'] = st.selectbox("Paleta de Cores", ["Azul Moderno", "Verde Crescimento", "Roxo Inovação", "Cinza Corporativo"], key="constr_color")
+                state['theme_font'] = st.selectbox("Fonte", ["Poppins", "Roboto", "Lato", "Open Sans"], key="constr_font")
+
+            with st.expander("2. Cabeçalho e Logo", expanded=True):
+                uploaded_logo = st.file_uploader("Sua Logomarca (PNG, JPG)", type=['png', 'jpg'], key="constr_logo")
+                if uploaded_logo:
+                    state['logo_b64'] = base64.b64encode(uploaded_logo.getvalue()).decode()
+                state['header_pitch'] = st.text_area("Pitch de Vendas (título)", value=state['header_pitch'], key="constr_pitch")
+
+            with st.expander("3. Links e Contato"):
+                state['whatsapp'] = st.text_input("Nº WhatsApp (Ex: 5511912345678)", value=state['whatsapp'], key="constr_wpp")
+                state['youtube'] = st.text_input("URL YouTube", value=state['youtube'], key="constr_yt")
+                state['instagram'] = st.text_input("URL Instagram", value=state['instagram'], key="constr_ig")
+                state['facebook'] = st.text_input("URL Facebook", value=state['facebook'], key="constr_fb")
+
+            with st.expander("4. Produtos/Serviços"):
+                with st.form("product_form"):
+                    st.write("**Adicionar novo produto/serviço**")
+                    product_name = st.text_input("Nome do Produto")
+                    product_photo = st.file_uploader("Foto do Produto", type=['png', 'jpg'])
+                    product_desc = st.text_area("Descrição do Produto")
+                    submitted = st.form_submit_button("Adicionar Produto")
+                    if submitted and product_name and product_photo and product_desc:
+                        if len(state['products']) < 18:
+                            photo_b64 = base64.b64encode(product_photo.getvalue()).decode()
+                            state['products'].append({'name': product_name, 'photo_b64': photo_b64, 'desc': product_desc})
+                            st.success(f"Produto '{product_name}' adicionado!")
+                        else:
+                            st.warning("Limite de 18 produtos atingido.")
+                
+                if state['products']:
+                    st.write("**Produtos Adicionados:**")
+                    for i, prod in enumerate(state['products']):
+                        c1, c2 = st.columns([3, 1])
+                        c1.write(f"_{prod['name']}_")
+                        if c2.button("Remover", key=f"del_{i}", use_container_width=True):
+                            state['products'].pop(i)
+                            st.rerun()
+
+            with st.expander("5. Rodapé"):
+                state['footer_text'] = st.text_input("Texto do Rodapé", value=state['footer_text'], key="constr_footer")
+        
+        # --- COLUNA 2: Pré-visualização e Download ---
+        with col2:
+            st.subheader("Pré-visualização da Página 📄")
+
+            color_map = {
+                'Azul Moderno': {'primary': (37, 99, 235), 'secondary': (219, 234, 254), 'text': (30, 64, 175), 'bg': '#eff6ff'},
+                'Verde Crescimento': {'primary': (22, 163, 74), 'secondary': (220, 252, 231), 'text': (20, 83, 45), 'bg': '#f0fdf4'},
+                'Roxo Inovação': {'primary': (124, 58, 237), 'secondary': (243, 232, 255), 'text': (88, 28, 135), 'bg': '#faf5ff'},
+                'Cinza Corporativo': {'primary': (71, 85, 105), 'secondary': (226, 232, 240), 'text': (30, 41, 59), 'bg': '#f8fafc'},
+            }
+            font_family = state['theme_font']
+            colors = color_map[state['theme_color']]
+
+            # Montando o HTML para o st.markdown (apenas para visualização)
+            logo_html = f"<img src='data:image/png;base64,{state['logo_b64']}' style='max-height: 60px; margin-bottom: 1rem;'>" if state['logo_b64'] else ""
+            products_html = ""
+            if state['products']:
+                for prod in state['products'][:6]: # Mostra apenas os primeiros 6 na preview
+                    products_html += f"""<div style="background-color: {colors['bg']}; border-left: 4px solid rgb{colors['primary']}; border-radius: 8px; padding: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                        <img src="data:image/png;base64,{prod['photo_b64']}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 4px; margin-bottom: 0.5rem;">
+                        <h4 style="font-weight: bold; color: rgb{colors['text']}; margin: 0 0 0.5rem 0; font-size:1em;">{prod['name']}</h4><p style="font-size: 0.8rem; color: #4a5568;">{prod['desc']}</p></div>"""
+            else:
+                products_html = "<p style='text-align: center; color: #9ca3af; grid-column: 1 / -1;'>Seus produtos aparecerão aqui.</p>"
+            
+            with st.container(border=True):
+                st.markdown(f"""
+                    <div style="font-family: {font_family}, sans-serif;">
+                    <header style="background-color: rgb{colors['primary']}; color: white; text-align: center; padding: 1.5rem;">{logo_html}<h2 style="font-size: 1.5rem; font-weight: bold; margin: 0;">{state['header_pitch']}</h2></header>
+                    <main style="padding: 1.5rem;"><div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">{products_html}</div></main>
+                    <footer style="background-color: rgb{colors['secondary']}; text-align: center; padding: 0.75rem; font-size: 0.7rem; color: #374151; border-top: 2px solid rgb{colors['primary']};">{state['footer_text']}</footer>
+                    </div>""", unsafe_allow_html=True)
+            
+            # --- Geração e Download do PDF ---
+            class PDF(FPDF):
+                def __init__(self, state, colors, font_family):
+                    super().__init__()
+                    self.state = state
+                    self.colors = colors
+                    self.font_family = font_family
+                    try: # Adiciona fontes. Garanta que os arquivos .ttf estão na pasta 'assets'
+                        self.add_font(font_family, '', get_asset_path(f"{font_family}.ttf"), uni=True)
+                        self.add_font(font_family, 'B', get_asset_path(f"{font_family}-Bold.ttf"), uni=True)
+                    except RuntimeError:
+                        st.warning(f"Fonte {font_family} não encontrada. Usando Arial."); self.font_family = "Arial"
+                        
+                def header(self):
+                    self.set_fill_color(*self.colors['primary']); self.rect(0, 0, 210, 40, 'F')
+                    if self.state['logo_b64']:
+                        self.image(io.BytesIO(base64.b64decode(self.state['logo_b64'])), x=10, y=8, h=15, type='PNG')
+                    self.set_font(self.font_family, 'B', 16); self.set_text_color(255, 255, 255)
+                    self.cell(0, 50, self.state['header_pitch'], 0, 1, 'C')
+
+                def footer(self):
+                    self.set_y(-15); self.set_fill_color(*self.colors['secondary']); self.rect(0, 282, 210, 15, 'F')
+                    self.set_font(self.font_family, '', 8); self.set_text_color(55, 65, 81)
+                    self.cell(0, 10, self.state['footer_text'], 0, 0, 'C')
+
+                def product_grid(self):
+                    self.set_y(50)
+                    col_width = 60; row_height = 65; x_margin = 15; y_margin = 10
+                    for i, prod in enumerate(self.state['products']):
+                        if i > 0 and i % 3 == 0: self.ln(row_height + y_margin) # Nova linha
+                        x_pos = x_margin + (i % 3) * (col_width + 5)
+                        y_pos = self.get_y()
+                        self.image(io.BytesIO(base64.b64decode(prod['photo_b64'])), x=x_pos, y=y_pos, w=col_width, h=35, type='PNG')
+                        self.set_xy(x_pos, y_pos + 37)
+                        self.set_font(self.font_family, 'B', 12); self.set_text_color(*self.colors['text'])
+                        self.multi_cell(col_width, 5, prod['name'])
+                        self.set_xy(x_pos, self.get_y())
+                        self.set_font(self.font_family, '', 10); self.set_text_color(74, 85, 104)
+                        self.multi_cell(col_width, 5, prod['desc'])
+                        self.set_y(y_pos)
+
+            pdf = PDF(state, colors, font_family)
+            pdf.add_page()
+            pdf.product_grid()
+            
+            # Adiciona mais páginas se necessário
+            if len(state['products']) > 6:
+                pdf.add_page(); pdf.product_grid()
+            if len(state['products']) > 12:
+                pdf.add_page(); pdf.product_grid()
+                
+            pdf_output = pdf.output(dest='S').encode('latin-1')
+            
+            st.download_button(
+                label="📥 Baixar Página em PDF", data=pdf_output, file_name="minha_pagina_de_vendas.pdf",
+                mime="application/pdf", use_container_width=True
+            )
+
 
     # Onboarding
     def exibir_onboarding_calibracao(self): st.title("Calibração da Empresa...")
