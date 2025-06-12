@@ -107,6 +107,73 @@ class MaxAgente:
         self.llm = llm_instance
         self.db = db_firestore_instance
 
+        # --- NOVO: Função de Onboarding e Calibração ---
+    def exibir_onboarding_calibracao(self):
+        st.title("Checklist de Calibração – Max IA Empresarial ⚙️")
+        st.markdown("Para que nossos agentes de IA atuem como membros da sua equipe, precisamos conhecer sua empresa a fundo. Suas respostas são essenciais para calibrar a inteligência e as prioridades dos seus novos assistentes virtuais.")
+        st.progress(0, text="Etapa 1 de 6")
+
+        if 'calibration_data' not in st.session_state:
+            st.session_state.calibration_data = {}
+
+        with st.form(key="calibration_form"):
+            st.header("Seção 1: Identidade e DNA da Empresa")
+            st.session_state.calibration_data['company_name'] = st.text_input("Nome da Empresa:")
+            st.session_state.calibration_data['website'] = st.text_input("Website e @ das principais redes sociais:")
+            st.session_state.calibration_data['setor'] = st.text_input("Setor de Atuação:", placeholder="Ex: Varejo de moda, restaurante, agência de marketing...")
+            st.session_state.calibration_data['pitch'] = st.text_area("Descreva seu negócio em uma frase:", placeholder="Ex: Vendemos cosméticos veganos para o público jovem pela internet.")
+            st.session_state.calibration_data['valores'] = st.multiselect("Quais são os 3 principais valores da sua marca?", ["Agilidade", "Sustentabilidade", "Atendimento humanizado", "Inovação", "Tradição", "Qualidade"])
+            st.session_state.calibration_data['personalidade'] = st.radio("Qual adjetivo melhor descreve a personalidade da sua marca?", 
+                                                                         ('Divertida e Jovem', 'Séria e Corporativa', 'Acolhedora e Amigável', 'Sofisticada e Premium', 'Técnica e Especialista', 'Inovadora e Ousada'))
+
+            st.header("Seção 2: Produtos, Serviços e Proposta de Valor")
+            st.session_state.calibration_data['produtos'] = st.text_area("Liste seus 3 principais produtos ou serviços:")
+            st.session_state.calibration_data['diferencial'] = st.text_input("Qual é o principal diferencial competitivo da sua empresa?")
+            st.session_state.calibration_data['faixa_preco'] = st.radio("Qual é a faixa de preço dos seus produtos/serviços?", ('Baixo Custo / Acessível', 'Preço Médio / Competitivo', 'Alto Valor / Premium'))
+
+            st.header("Seção 3: O Cliente Ideal (Público-Alvo)")
+            st.session_state.calibration_data['cliente_ideal'] = st.text_area("Descreva seu cliente ideal:", placeholder="Idade, gênero, localização, interesses...")
+            st.session_state.calibration_data['dor_cliente'] = st.text_input("Qual a principal 'dor' ou necessidade do seu cliente que sua empresa resolve?")
+            st.session_state.calibration_data['linguagem_cliente'] = st.radio("Qual é a linguagem que mais conecta com seu público?", ('Informal, com gírias e emojis 😄', 'Padrão, clara e objetiva.', 'Formal e técnica.'))
+            
+            st.header("Seção 4: Marketing e Vendas")
+            st.session_state.calibration_data['canais_atracao'] = st.multiselect("Quais são seus principais canais para atrair clientes hoje?", 
+                                                                                ['Loja Física', 'Vendedores Externos', 'Anúncios no Google', 'Anúncios em Redes Sociais', 'Conteúdo Orgânico', 'Indicações', 'WhatsApp', 'E-mail Marketing'])
+            st.session_state.calibration_data['objecao_venda'] = st.text_input("Qual a objeção de venda mais comum que vocês enfrentam?", placeholder="Ex: 'Está caro', 'Vou pensar'...")
+
+            st.header("Seção 5: Operações e Atendimento")
+            st.session_state.calibration_data['faqs'] = st.text_area("Quais são as 3 perguntas mais frequentes que sua equipe de atendimento recebe?")
+            st.session_state.calibration_data['tarefa_repetitiva'] = st.text_input("Qual tarefa repetitiva você mais gostaria que a IA assumisse?")
+
+            st.header("Seção 6: Objetivos e Calibração Final da IA")
+            st.session_state.calibration_data['objetivo_principal'] = st.radio("Qual é o OBJETIVO Nº 1 que você espera alcançar com o Max Ia Empresarial nos próximos 3 meses?",
+                                                                               ('Aumentar o número de leads', 'Aumentar as vendas', 'Reduzir o tempo de resposta ao cliente', 'Automatizar tarefas manuais'))
+            st.session_state.calibration_data['autonomia_ia'] = st.slider("Em uma escala de 1 a 5, quão autônomo você deseja que os agentes de IA sejam?", 1, 5, 3, 
+                                                                         help="1 = Apenas sugere; 3 = Executa tarefas padrão; 5 = Toma decisões de forma independente.")
+            
+            submitted = st.form_submit_button("✅ Concluir Calibração e Ativar meus Agentes!")
+            if submitted:
+                with st.spinner("Salvando o DNA da sua empresa e calibrando seus agentes de IA..."):
+                    try:
+                        user_uid = st.session_state.get('user_uid')
+                        company_ref = self.db.collection(COMPANY_COLLECTION).document()
+                        # Salva os dados da empresa
+                        company_ref.set(st.session_state.calibration_data)
+                        
+                        # Atualiza o documento do usuário com o ID da nova empresa
+                        user_ref = self.db.collection(USER_COLLECTION).document(user_uid)
+                        user_ref.update({"company_id": company_ref.id})
+
+                        time.sleep(2)
+                        st.success("Calibração concluída! Seus agentes agora conhecem o seu negócio.")
+                        time.sleep(1)
+                        # Limpa os dados do formulário para a próxima vez
+                        del st.session_state['calibration_data']
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"Ocorreu um erro ao salvar a calibração: {e}")
+
+
     def exibir_painel_boas_vindas(self):
         st.title("👋 Bem-vindo ao seu Centro de Comando!")
         st.markdown("Use o menu à esquerda para navegar entre os Agentes Max IA e transformar a gestão da sua empresa.")
