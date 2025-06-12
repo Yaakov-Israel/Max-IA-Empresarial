@@ -776,38 +776,57 @@ def exibir_formularios_de_acesso():
 # 7. ESTRUTURA PRINCIPAL E EXECUÇÃO DO APP
 # ==============================================================================
 def main():
+    # --- Verificação Inicial dos Serviços ---
     if not all([pb_auth_client, firestore_db]):
-        st.error("Falha crítica na inicialização dos serviços."); st.stop()
+        st.error("Falha crítica na inicialização dos serviços. O aplicativo não pode continuar.")
+        st.stop()
 
     user_is_authenticated, user_uid, user_email = get_current_user_status(pb_auth_client)
 
     if user_is_authenticated:
-        logo_path = get_asset_path('max-ia-lgo.fundo.transparente.png')
-        if os.path.exists(logo_path):
-            st.sidebar.image(logo_path, width=100)
+        # --- USUÁRIO LOGADO - FLUXO PRINCIPAL DO APP ---
         
+        # --- CORREÇÃO À PROVA DE FALHAS: Tenta carregar a logo, mas não quebra se não encontrar ---
+        try:
+            logo_path = get_asset_path('max-ia-lgo.fundo.transparente.png')
+            if os.path.exists(logo_path):
+                st.sidebar.image(logo_path, width=100)
+            else:
+                # Se o arquivo não existe, apenas ignora, não quebra o app.
+                pass 
+        except Exception as e:
+            print(f"Alerta: Não foi possível carregar a logo da sidebar. Erro: {e}")
+
+
         st.sidebar.title("Max IA Empresarial")
         st.sidebar.markdown("---")
         
         if 'agente' not in st.session_state:
             llm = get_llm()
-            if llm and firestore_db: st.session_state.agente = MaxAgente(llm, firestore_db)
-            else: st.error("Agente Max IA não pôde ser inicializado."); st.stop()
+            if llm and firestore_db: 
+                st.session_state.agente = MaxAgente(llm, firestore_db)
+            else: 
+                st.error("Agente Max IA não pôde ser inicializado.")
+                st.stop()
+        
         agente = st.session_state.agente
         
         try:
             user_doc = firestore_db.collection(USER_COLLECTION).document(user_uid).get()
             user_data = user_doc.to_dict() if user_doc.exists else None
-        except Exception as e: st.error(f"Erro ao buscar dados do usuário: {e}"); st.stop()
+        except Exception as e: 
+            st.error(f"Erro ao buscar dados do usuário: {e}")
+            st.stop()
 
         if not user_data: 
-            user_data = {"email": user_email, "access_level": 2} # Garante que haja um nível padrão
+            user_data = {"email": user_email, "access_level": 2}
             firestore_db.collection(USER_COLLECTION).document(user_uid).set(user_data, merge=True)
         
         st.sidebar.write(f"Logado como: **{user_email}**")
         st.sidebar.caption(f"Nível de Acesso: {user_data.get('access_level', 'N/D')}")
         if st.sidebar.button("Logout", key=f"{APP_KEY_SUFFIX}_logout"):
-            st.session_state.clear(); st.rerun()
+            st.session_state.clear()
+            st.rerun()
         
         # --- LÓGICA DE ACESSO POR NÍVEL (ATUALIZADA) ---
         opcoes_menu_completo = {
@@ -824,12 +843,9 @@ def main():
         opcoes_permitidas_nomes = []
 
         if access_level == 1:
-            # Nível 1 tem acesso a tudo
             opcoes_permitidas_nomes = list(opcoes_menu_completo.keys())
         else:
-            # Todos os outros níveis têm acesso ao Bem-vindo e ao Trainer por padrão
             opcoes_permitidas_nomes = ["👋 Bem-vindo", "🎓 MaxTrainer IA"]
-            
             if access_level == 2:
                 opcoes_permitidas_nomes.append("📈 Central do Cliente 360°")
             elif access_level == 3:
@@ -839,22 +855,19 @@ def main():
             elif access_level == 5:
                 opcoes_permitidas_nomes.append("💰 MaxFinanceiro")
             elif access_level == 6:
-                # O nome no menu é "Central de Comando"
                 opcoes_permitidas_nomes.append("🏢 Central de Comando")
         
-        # Constrói o dicionário de menu final com base nas permissões
         opcoes_menu_filtrado = {
             nome: funcao for nome, funcao in opcoes_menu_completo.items() if nome in opcoes_permitidas_nomes
         }
 
         selecao_label = st.sidebar.radio("Max Agentes IA:", list(opcoes_menu_filtrado.keys()), key=f"{APP_KEY_SUFFIX}_menu")
         
-        # Executa a função do item de menu selecionado
         if selecao_label in opcoes_menu_filtrado:
             opcoes_menu_filtrado[selecao_label]()
 
     else:
-        # Bloco do usuário não logado
+        # --- USUÁRIO NÃO LOGADO - FLUXO DE ENTRADA ---
         if st.session_state.get('show_login_form', False):
             exibir_formularios_de_acesso()
         else:
