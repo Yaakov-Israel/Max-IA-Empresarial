@@ -519,38 +519,11 @@ Cena 3 (5s): O sofá limpo e impecável, com a família sorrindo.
     def exibir_tour_guiado(self): st.title("Tour Guiado...")
 
 # ==============================================================================
-# 6. FUNÇÕES DA INTERFACE DE ENTRADA
+# 6. FUNÇÕES DA INTERFACE DE ENTRADA (VERSÃO ESTÁVEL)
 # ==============================================================================
 
-def exibir_pagina_de_ativacao():
-    """Renderiza a página para o usuário inserir a chave de ativação."""
-    st.markdown("""<style>[data-testid="stSidebar"] { display: none; }</style>""", unsafe_allow_html=True)
-    _ , col, _ = st.columns([1, 1.5, 1])
-    with col:
-        try:
-            logo_path = get_asset_path('max-ia-lgo.fundo.transparente.png')
-            if os.path.exists(logo_path):
-                st.image(logo_path, width=150)
-        except Exception:
-            st.title("Max IA Empresarial")
-        
-        st.header("🔑 Ative seu Max IA")
-        st.write("Insira a chave de ativação que você recebeu por e-mail para começar.")
-
-        with st.form("activation_form"):
-            activation_key = st.text_input("Chave de Ativação", placeholder="XXXX-XXXX-XXXX-XXXX")
-            submitted = st.form_submit_button("Ativar e Criar minha Conta", use_container_width=True)
-
-            if submitted:
-                # Aqui iria a lógica para validar a chave no Firebase
-                if activation_key: # Simulação de chave válida
-                    st.success("Chave validada com sucesso! Prossiga com o registro da sua conta.")
-                    st.info("Funcionalidade de registro pós-ativação em desenvolvimento.")
-                else:
-                    st.error("Chave de ativação inválida ou já utilizada.")
-
 def exibir_pagina_de_entrada():
-    """Renderiza a capa de abertura com as 3 opções de ação."""
+    """Renderiza a capa de abertura com 2 opções: Cliente ou Não Cliente."""
     try:
         logo_base64 = convert_image_to_base64('max-ia-lgo.fundo.transparente.png')
         background_image_url = "https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
@@ -574,16 +547,56 @@ def exibir_pagina_de_entrada():
             if st.button("Já sou cliente", use_container_width=True):
                 st.session_state['show_login_form'] = True
                 st.rerun()
-            if st.button("Quero ativar meu Max IA agora", use_container_width=True):
-                st.session_state['show_activation_form'] = True
-                st.rerun()
             if st.button("Ainda não sou cliente", type="secondary", use_container_width=True):
                 st.html(f"<script>window.open('{SALES_PAGE_URL}', '_blank')</script>")
             st.caption("<p style='text-align: center; color: white;'>Ao continuar, você aceita nossos Termos e condições.</p>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
+
+def exibir_formularios_de_acesso():
+    """Renderiza os formulários de login e registro no corpo da página."""
+    st.markdown("""<style>[data-testid="stSidebar"] { display: none; }</style>""", unsafe_allow_html=True)
+    _ , col, _ = st.columns([1, 1.5, 1])
+    with col:
+        try:
+            logo_path = get_asset_path('max-ia-lgo.fundo.transparente.png')
+            if os.path.exists(logo_path):
+                st.image(logo_path, width=150)
+        except Exception:
+            st.title("Max IA Empresarial")
+        
+        st.header("Acesse sua Central de Comando")
+        tab_login, tab_register = st.tabs(["Login", "Registrar"])
+        with tab_login:
+            with st.form("login_form_main"):
+                email = st.text_input("Email", key="login_email")
+                password = st.text_input("Senha", type="password", key="login_pass")
+                if st.form_submit_button("Entrar", use_container_width=True):
+                    try:
+                        user_creds = pb_auth_client.sign_in_with_email_and_password(email, password)
+                        st.session_state[f'{APP_KEY_SUFFIX}_user_session_data'] = user_creds
+                        st.session_state['show_login_form'] = False
+                        st.rerun()
+                    except Exception:
+                        st.error("Email ou senha inválidos.")
+        with tab_register:
+            with st.form("register_form_main"):
+                reg_email = st.text_input("Seu melhor e-mail", key="reg_email")
+                reg_password = st.text_input("Crie uma senha forte", type="password", key="reg_pass")
+                if st.form_submit_button("Registrar Conta", use_container_width=True):
+                    if reg_email and len(reg_password) >= 6:
+                        try:
+                            new_user = pb_auth_client.create_user_with_email_and_password(reg_email, reg_password)
+                            user_data = { "email": reg_email, "registration_date": firebase_admin_firestore.SERVER_TIMESTAMP, "access_level": 2, "company_id": None, "analogy_domain": None }
+                            firestore_db.collection(USER_COLLECTION).document(new_user['localId']).set(user_data)
+                            st.success("Conta criada! Volte para a aba 'Login' para entrar.")
+                        except Exception:
+                            st.error("Este e-mail já está em uso ou ocorreu um erro.")
+                    else:
+                        st.warning("Preencha todos os campos corretamente.")
+
 # ==============================================================================
-# 7. ESTRUTURA PRINCIPAL E EXECUÇÃO DO APP
+# 7. ESTRUTURA PRINCIPAL E EXECUÇÃO DO APP (VERSÃO ESTÁVEL)
 # ==============================================================================
 def main():
     if not all([pb_auth_client, firestore_db]):
@@ -592,30 +605,31 @@ def main():
     user_is_authenticated, user_uid, user_email = get_current_user_status(pb_auth_client)
 
     if user_is_authenticated:
-        # --- CORREÇÃO À PROVA DE FALHAS: Tenta carregar a logo, mas não quebra o app se falhar ---
+        # --- USUÁRIO LOGADO: FLUXO PRINCIPAL DO APP ---
         try:
             logo_path = get_asset_path('max-ia-lgo.fundo.transparente.png')
             if os.path.exists(logo_path):
                 st.sidebar.image(logo_path, width=100)
         except Exception as e:
-            # Se a imagem não for encontrada, o app continua funcionando
             print(f"Alerta: Não foi possível carregar a logo da sidebar. Erro: {e}")
 
         st.sidebar.title("Max IA Empresarial")
         st.sidebar.markdown("---")
         
-        # O resto da lógica principal...
         if 'agente' not in st.session_state:
             llm = get_llm()
-            if llm and firestore_db: st.session_state.agente = MaxAgente(llm, firestore_db)
-            else: st.error("Agente Max IA não pôde ser inicializado."); st.stop()
+            if llm and firestore_db: 
+                st.session_state.agente = MaxAgente(llm, firestore_db)
+            else: 
+                st.error("Agente Max IA não pôde ser inicializado."); st.stop()
         
         agente = st.session_state.agente
         
         try:
             user_doc = firestore_db.collection(USER_COLLECTION).document(user_uid).get()
             user_data = user_doc.to_dict() if user_doc.exists else None
-        except Exception as e: st.error(f"Erro ao buscar dados do usuário: {e}"); st.stop()
+        except Exception as e: 
+            st.error(f"Erro ao buscar dados do usuário: {e}"); st.stop()
 
         if not user_data: 
             user_data = {"email": user_email, "access_level": 2}
@@ -626,7 +640,7 @@ def main():
         if st.sidebar.button("Logout", key=f"{APP_KEY_SUFFIX}_logout"):
             st.session_state.clear(); st.rerun()
         
-        # Lógica de acesso por nível...
+        # --- LÓGICA DE ACESSO POR NÍVEL ---
         opcoes_menu_completo = {
             "👋 Bem-vindo": agente.exibir_painel_boas_vindas,
             "🏢 Central de Comando": agente.exibir_central_de_comando,
@@ -645,8 +659,11 @@ def main():
         else:
             opcoes_permitidas_nomes = ["👋 Bem-vindo", "🎓 MaxTrainer IA"]
             if access_level == 2: opcoes_permitidas_nomes.append("📈 Central do Cliente 360°")
-            # Adicione outras regras de nível aqui...
-
+            elif access_level == 3: opcoes_permitidas_nomes.append("🚀 MaxMarketing Total")
+            elif access_level == 4: opcoes_permitidas_nomes.append("🏗️ MaxConstrutor")
+            elif access_level == 5: opcoes_permitidas_nomes.append("💰 MaxFinanceiro")
+            elif access_level == 6: opcoes_permitidas_nomes.append("🏢 Central de Comando")
+        
         opcoes_menu_filtrado = {nome: funcao for nome, funcao in opcoes_menu_completo.items() if nome in opcoes_permitidas_nomes}
 
         selecao_label = st.sidebar.radio("Max Agentes IA:", list(opcoes_menu_filtrado.keys()), key=f"{APP_KEY_SUFFIX}_menu")
@@ -654,10 +671,11 @@ def main():
             opcoes_menu_filtrado[selecao_label]()
 
     else:
-        # --- USUÁRIO NÃO LOGADO - NOVA LÓGICA DE FLUXO ---
+        # --- USUÁRIO NÃO LOGADO: FLUXO DE ENTRADA SIMPLES ---
         if st.session_state.get('show_login_form', False):
             exibir_formularios_de_acesso()
-        elif st.session_state.get('show_activation_form', False):
-            exibir_pagina_de_ativacao() # <-- Nova rota
         else:
             exibir_pagina_de_entrada()
+
+if __name__ == "__main__":
+    main()
