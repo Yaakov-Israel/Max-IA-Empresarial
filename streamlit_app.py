@@ -230,16 +230,34 @@ class MaxAgente:
                 st.session_state.messages_trainer.append({"role": "assistant", "content": f"Explicando '{prompt}' com uma analogia de Futebol... (Simulação)"})
 
                # --- 5.1: MaxMarketing Total ---
+    # --- 5.1: MaxMarketing Total ---
     def exibir_max_marketing_total(self):
         st.header("🚀 Estúdio de Criação Max")
         st.caption("Seu Diretor de Marketing Pessoal para criar posts, campanhas e anúncios que vendem.")
         st.markdown("---")
         
-        # Inicializa o histórico de posts na sessão, se não existir
+        # PASSO 1: IDENTIFICAR O USUÁRIO (VEM PRIMEIRO)
+        # Pega o UID do usuário logado para acessar seu banco de dados
+        user_uid = st.session_state.get('user_uid')
+        if not user_uid:
+            st.error("Não foi possível identificar o usuário. Por favor, faça o login novamente.")
+            return
+            
+        # PASSO 2: CARREGAR O HISTÓRICO DELE (VEM DEPOIS, SUBSTITUINDO O ANTIGO)
+        # --- LÓGICA DE PERSISTÊNCIA COM FIRESTORE ---
+        # Carrega o histórico do Firestore para a memória da sessão na primeira vez
         if 'marketing_post_history' not in st.session_state:
-            st.session_state.marketing_post_history = []
-        if 'marketing_post_result' not in st.session_state:
-            st.session_state.marketing_post_result = None
+            try:
+                posts_ref = self.db.collection(USER_COLLECTION).document(user_uid).collection("marketing_posts")
+                # Busca os últimos 5 posts ordenados pela data de criação
+                query = posts_ref.order_by("created_at", direction=firebase_admin_firestore.Query.DESCENDING).limit(5)
+                docs = query.stream()
+                st.session_state.marketing_post_history = [doc.to_dict() for doc in docs]
+            except Exception as e:
+                st.warning(f"Não foi possível carregar o histórico de posts: {e}")
+                st.session_state.marketing_post_history = []
+        
+        # O resto da função continua...
 
         # --- Estrutura de Abas (Wizard) ---
         tab_post, tab_campaign, tab_ads = st.tabs([
@@ -309,6 +327,7 @@ class MaxAgente:
             # Exibe o histórico de posts
             if st.session_state.marketing_post_history:
                 st.markdown("---")
+               
                 st.subheader("📖 Histórico de Posts Recentes")
                 for i, post in enumerate(st.session_state.marketing_post_history):
                     with st.container(border=True):
