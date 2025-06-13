@@ -25,7 +25,7 @@ ASSETS_DIR = "assets"
 def get_asset_path(asset_name):
     """Constrói o caminho para um asset dentro das pastas 'assets' ou 'fonts' de forma segura."""
     try:
- base_dir = os.path.dirname(os.path.abspath(__file__))
+ base_dir = os.path.dirname(os.path.abspath(__file__)) if '__file__' in locals() else os.getcwd()
 
  # Tenta encontrar na pasta 'assets'
  asset_path = os.path.join(base_dir, ASSETS_DIR, asset_name)
@@ -38,13 +38,13 @@ def get_asset_path(asset_name):
  return font_path
 
     except NameError:
-         # Fallback para ambientes onde __file__ não está definido (como alguns notebooks)
+ # Fallback para ambientes onde __file__ não está definido (como alguns notebooks)
         asset_path_fallback = os.path.join(ASSETS_DIR, asset_name)
         if os.path.exists(asset_path_fallback): return asset_path_fallback
         font_path_fallback = os.path.join("fonts", asset_name)
         if os.path.exists(font_path_fallback): return font_path_fallback
 
-    # Se não encontrou em nenhuma pasta
+ # Se não encontrou em nenhuma pasta
     raise FileNotFoundError(f"Asset '{asset_name}' not found in '{ASSETS_DIR}' or 'fonts' directories.")
 
 
@@ -754,4 +754,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-                
