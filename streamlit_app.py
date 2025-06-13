@@ -404,7 +404,7 @@ class MaxAgente:
                 # CORREÇÃO DA SINTAXE: Usando aspas triplas para segurança
                 st.warning(f"""**Otimização Contínua do Max (após 3 dias):** "{result['optimization_tip']}" """)
 
-                if st.button("✨ Criar Novos Anúncios"):
+            if st.button("✨ Criar Novos Anúncios"):
     # Adiciona o anúncio atual ao início do histórico
     st.session_state.marketing_ads_history.insert(0, st.session_state.marketing_ads_result)
     # Mantém o histórico com no máximo 5 itens
