@@ -235,11 +235,15 @@ class MaxAgente:
         st.caption("Seu Diretor de Marketing Pessoal para criar posts, campanhas e anúncios que vendem.")
         st.markdown("---")
         
-        # Inicializa o histórico de posts na sessão, se não existir
-        if 'marketing_post_history' not in st.session_state:
-            st.session_state.marketing_post_history = []
-        if 'marketing_post_result' not in st.session_state:
-            st.session_state.marketing_post_result = None
+        # Inicializa os estados da sessão para este módulo
+    if 'marketing_post_history' not in st.session_state:
+        st.session_state.marketing_post_history = []
+    if 'marketing_post_result' not in st.session_state:
+        st.session_state.marketing_post_result = None
+    if 'marketing_ads_result' not in st.session_state:
+        st.session_state.marketing_ads_result = None
+    if 'marketing_ads_history' not in st.session_state: # <-- LINHA A SER ADICIONADA
+        st.session_state.marketing_ads_history = []
 
         # --- Estrutura de Abas (Wizard) ---
         tab_post, tab_campaign, tab_ads = st.tabs([
