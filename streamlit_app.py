@@ -25,7 +25,7 @@ ASSETS_DIR = "assets"
 def get_asset_path(asset_name):
     """Constrói o caminho para um asset dentro das pastas 'assets' ou 'fonts' de forma segura."""
     try:
- base_dir = os.path.dirname(os.path.abspath(__file__)) if '__file__' in locals() else os.getcwd()
+        base_dir = os.path.dirname(os.path.abspath(__file__)) if '__file__' in locals() else os.getcwd()
 
  # Tenta encontrar na pasta 'assets'
  asset_path = os.path.join(base_dir, ASSETS_DIR, asset_name)
