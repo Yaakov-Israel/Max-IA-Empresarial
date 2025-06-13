@@ -229,12 +229,18 @@ class MaxAgente:
                 st.markdown(f"Explicando '{prompt}' com uma analogia de Futebol... (Simulação)")
                 st.session_state.messages_trainer.append({"role": "assistant", "content": f"Explicando '{prompt}' com uma analogia de Futebol... (Simulação)"})
 
-            # --- 5.1: MaxMarketing Total ---
+               # --- 5.1: MaxMarketing Total ---
     def exibir_max_marketing_total(self):
         st.header("🚀 Estúdio de Criação Max")
         st.caption("Seu Diretor de Marketing Pessoal para criar posts, campanhas e anúncios que vendem.")
         st.markdown("---")
         
+        # Inicializa o histórico de posts na sessão, se não existir
+        if 'marketing_post_history' not in st.session_state:
+            st.session_state.marketing_post_history = []
+        if 'marketing_post_result' not in st.session_state:
+            st.session_state.marketing_post_result = None
+
         # --- Estrutura de Abas (Wizard) ---
         tab_post, tab_campaign, tab_ads = st.tabs([
             "✍️ Criar Post Rápido", "🎯 Criar Campanha Completa", "⚡ Criar Anúncio Rápido"
@@ -242,50 +248,36 @@ class MaxAgente:
 
         # --- Aba 1: Criar Post ---
         with tab_post:
-            st.subheader("Gerador de Conteúdo Criativo")
-            st.write("Ideal para manter suas redes sociais ativas e interessantes no dia a dia.")
+            # Se não houver um resultado sendo exibido, mostra o formulário de criação
+            if not st.session_state.marketing_post_result:
+                st.subheader("Gerador de Conteúdo Criativo")
+                st.write("Ideal para manter suas redes sociais ativas e interessantes no dia a dia.")
 
-            # Usar o st.session_state para guardar o resultado
-            if 'marketing_post_result' not in st.session_state:
-                st.session_state.marketing_post_result = None
+                with st.form("post_briefing_form"):
+                    post_idea = st.text_area("Sobre o que é o post de hoje? Me dê uma ideia simples.", "Promoção prato do dia: arroz, feijão, batata frita, salada de tomate, alface e cebola e bife de boi por APENAS 18,99")
+                    post_channel = st.selectbox("Para qual canal você quer criar primeiro?", ["Instagram", "Facebook", "TikTok", "YouTube (Roteiro Curto)"])
+                    
+                    submitted = st.form_submit_button("💡 Gerar Pacote de Mídia com Max IA")
+                    if submitted:
+                        with st.spinner("Max está buscando inspiração e criando seu conteúdo..."):
+                            time.sleep(2) 
+                            
+                            topic = post_idea.split(':')[0].replace("Promoção", "").strip() if ':' in post_idea else "seu produto"
 
-            with st.form("post_briefing_form"):
-                post_idea = st.text_area("Sobre o que é o post de hoje? Me dê uma ideia simples.", "Promoção prato do dia: arroz, feijão, batata frita, salada de tomate, alface e cebola e bife de boi por APENAS 18,99")
-                post_channel = st.selectbox("Para qual canal você quer criar primeiro?", ["Instagram", "Facebook", "TikTok", "YouTube (Roteiro Curto)"])
-                
-                submitted = st.form_submit_button("💡 Gerar Pacote de Mídia com Max IA")
-                if submitted:
-                    with st.spinner("Max está buscando inspiração e criando seu conteúdo..."):
-                        # --- LÓGICA DA IA (SIMULADA, MAS AGORA USANDO O INPUT) ---
-                        # Em um app real, aqui você chamaria self.llm.invoke(prompt)
-                        time.sleep(2) 
-                        
-                        # Extrai o tópico principal do input do usuário para usar no título
-                        topic = post_idea.split(':')[0].replace("Promoção", "").strip() if ':' in post_idea else "seu produto"
-
-                        # Cria um pacote de resultados dinâmico
-                        st.session_state.marketing_post_result = {
-                            "topic": topic,
-                            "feed_option_1": f"🍲 Sabor de casa com preço de amigo! Nosso incrível **{topic}** está em promoção por um preço que você não vai acreditar. Venha matar a fome com a gente!",
-                            "feed_option_2": f"🔥 Cansado de pensar no almoço? A decisão ficou fácil! **{topic}** completo e delicioso esperando por você. Corra que a promoção é por tempo limitado!",
-                            "hashtags": f"#{topic.replace(' ', '').lower()} #comidacaseira #promo #almoco #restaurante",
-                            "stories_script": f"""
-Cena 1 (2s): Imagem de um prato fumegante de {topic}.
-   Texto na tela: "A fome bateu?"
-
-Cena 2 (3s): Close nos ingredientes frescos do prato.
-   Texto: "Qualidade que você vê e sente!"
-
-Cena 3 (5s): Preço 'R$ 18,99' piscando na tela.
-   Texto: "Seu almoço resolvido. Peça agora!" """,
-                            "image_url": "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-                            "image_caption": f"Imagem gerada por IA: 'Um delicioso e convidativo {topic} servido em uma mesa de restaurante'."
-                        }
+                            st.session_state.marketing_post_result = {
+                                "topic": topic,
+                                "feed_option_1": f"🍲 Sabor de casa com preço de amigo! Nosso incrível **{topic}** está em promoção por um preço que você não vai acreditar. Venha matar a fome com a gente!",
+                                "feed_option_2": f"🔥 Cansado de pensar no almoço? A decisão ficou fácil! **{topic}** completo e delicioso esperando por você. Corra que a promoção é por tempo limitado!",
+                                "hashtags": f"#{topic.replace(' ', '').lower()} #comidacaseira #promo #almoco #restaurante",
+                                "stories_script": f"""Cena 1 (2s): Imagem de um prato fumegante de {topic}.\n   Texto na tela: "A fome bateu?"\n\nCena 2 (3s): Close nos ingredientes frescos do prato.\n   Texto: "Qualidade que você vê e sente!"\n\nCena 3 (5s): Preço 'R$ 18,99' piscando na tela.\n   Texto: "Seu almoço resolvido. Peça agora!" """,
+                                "image_url": "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+                                "image_caption": f"Imagem gerada por IA: 'Um delicioso e convidativo {topic} servido em uma mesa de restaurante'."
+                            }
+                        st.rerun() # Recarrega para mostrar o resultado
             
             # Exibe o resultado se ele existir no session_state
             if st.session_state.marketing_post_result:
                 result = st.session_state.marketing_post_result
-                st.markdown("---")
                 st.subheader(f"✅ Seu Pacote de Mídia para '{result['topic']}'")
 
                 tab_feed, tab_stories, tab_image = st.tabs(["📷 Para o Feed", "📱 Para Stories/Reels", "🖼️ Sugestão de Imagem (IA)"])
@@ -306,20 +298,35 @@ Cena 3 (5s): Preço 'R$ 18,99' piscando na tela.
                     st.image(result['image_url'], caption=result['image_caption'])
                 
                 if st.button("✨ Criar Novo Post"):
+                    # Adiciona o post atual ao início do histórico
+                    st.session_state.marketing_post_history.insert(0, st.session_state.marketing_post_result)
+                    # Mantém o histórico com no máximo 5 itens
+                    st.session_state.marketing_post_history = st.session_state.marketing_post_history[:5]
+                    # Limpa o resultado atual para mostrar o formulário novamente
                     st.session_state.marketing_post_result = None
                     st.rerun()
 
+            # Exibe o histórico de posts
+            if st.session_state.marketing_post_history:
+                st.markdown("---")
+                st.subheader("📖 Histórico de Posts Recentes")
+                for i, post in enumerate(st.session_state.marketing_post_history):
+                    with st.container(border=True):
+                        col1, col2 = st.columns([4,1])
+                        with col1:
+                            st.write(f"**Tópico:** {post['topic']}")
+                            st.caption(f"*" + post['feed_option_1'][:50] + "...*")
+                        with col2:
+                            if st.button("Rever este Post", key=f"rever_{i}"):
+                                st.session_state.marketing_post_result = post
+                                st.rerun()
+
         # --- Aba 2: Criar Campanha ---
         with tab_campaign:
-            st.subheader("Estrategista de Mídia Digital")
-            # O restante do código desta aba permanece o mesmo...
             st.info("Funcionalidade em desenvolvimento.")
-
 
         # --- Aba 3: Criar Anúncio Rápido ---
         with tab_ads:
-            st.subheader("Especialista Google Simplificado")
-            # O restante do código desta aba permanece o mesmo...
             st.info("Funcionalidade em desenvolvimento.")
 
         # --- 5.2: Max Construtor - Página de Venda ---
