@@ -355,30 +355,58 @@ class MaxAgente:
                         - Um **'Público Semelhante'** aos seus melhores clientes cadastrados na sua Central do Cliente 360°.
                         """)
 
-        # --- Aba 3: Criar Anúncio Rápido ---
+                # --- Aba 3: Criar Anúncio Rápido ---
         with tab_ads:
-            st.subheader("Especialista Google Simplificado")
-            st.write("Coloque sua empresa no topo do Google sem complicações.")
-            
-            user_search_term = st.text_input("O que uma pessoa digitaria no Google para te encontrar?", "eletricista 24 horas em Juiz de Fora")
-            
-            if st.button("🔍 Gerar Anúncios de Alta Performance"):
-                with st.spinner("Max está pesquisando as melhores palavras e criando seus anúncios..."):
-                    time.sleep(2)
-                    st.success("Anúncios prontos para o Google!")
-                    
-                    st.markdown("---")
-                    st.subheader("✅ Seus Anúncios para o Google")
-                    
-                    with st.expander("Palavras-Chave Encontradas pela IA"):
-                        st.write(["eletricista 24 horas juiz de fora", "eletricista de emergência jf", "conserto elétrico urgente", "eletricista perto de mim agora"])
-                    
-                    with st.container(border=True):
-                        st.write("**Anúncio 1 (Foco em Velocidade):**")
-                        st.markdown("> **Eletricista 24h em Juiz de Fora | Atendimento Rápido**")
-                        st.caption("Problema Elétrico? Chegamos em até 40 Min. Atendemos todos os bairros. Orçamento grátis pelo WhatsApp!")
-                    
-                    st.warning("**Otimização Contínua do Max (após 3 dias):** \"O anúncio com o título 'Chegamos em 40 Min.' está trazendo 50% mais cliques. Recomendo pausar os outros. Você aprova?\"")
+            # Se não houver um resultado sendo exibido, mostra o formulário de criação
+            if not st.session_state.get('marketing_ads_result'):
+                st.subheader("Especialista Google Simplificado")
+                st.write("Coloque sua empresa no topo do Google sem complicações.")
+                
+                with st.form("ads_briefing_form"):
+                    user_search_term = st.text_input("O que uma pessoa digitaria no Google para te encontrar?", "Restaurante Culinária Mineira em Juiz de Fora")
+                    submitted = st.form_submit_button("🔍 Gerar Anúncios de Alta Performance")
+                    if submitted and user_search_term:
+                        with st.spinner("Max está pesquisando as melhores palavras e criando seus anúncios..."):
+                            time.sleep(2)
+                            # Simula a geração de conteúdo dinâmico
+                            main_keyword = " ".join(user_search_term.split(" ")[:3]) # Pega as primeiras 3 palavras para o título
+
+                            st.session_state.marketing_ads_result = {
+                                "term": user_search_term,
+                                "keywords": [user_search_term, f"{main_keyword} perto de mim", f"melhor {main_keyword}"],
+                                "ad1_title": f"{main_keyword.title()} | Sabor e Tradição",
+                                "ad1_desc": "A verdadeira comida mineira que você ama. Pratos autênticos e ambiente acolhedor. Faça sua reserva!",
+                                "ad2_title": f"Onde Comer {main_keyword.title()}? | Venha nos Visitar",
+                                "ad2_desc": "Experimente o melhor da culinária local. Ingredientes frescos e receitas de família. Esperamos por você!",
+                                "optimization_tip": f"O anúncio com o título '{main_keyword.title()} | Sabor e Tradição' está com mais cliques. Recomendo pausar o outro. Você aprova?"
+                            }
+                        st.rerun()
+
+            # Exibe o resultado se ele existir no session_state
+            if st.session_state.get('marketing_ads_result'):
+                result = st.session_state.marketing_ads_result
+                st.subheader(f"✅ Seus Anúncios para o Google sobre '{result['term']}'")
+                
+                with st.expander("Palavras-Chave Encontradas pela IA"):
+                    st.write(result['keywords'])
+                
+                with st.container(border=True):
+                    st.write("**Anúncio 1 (Foco em Tradição):**")
+                    st.markdown(f"> **{result['ad1_title']}**")
+                    st.caption(result['ad1_desc'])
+                
+                with st.container(border=True):
+                    st.write("**Anúncio 2 (Foco em Convite):**")
+                    st.markdown(f"> **{result['ad2_title']}**")
+                    st.caption(result['ad2_desc'])
+                
+                st.markdown("---")
+                # CORREÇÃO DA SINTAXE: Usando aspas triplas para segurança
+                st.warning(f"""**Otimização Contínua do Max (após 3 dias):** "{result['optimization_tip']}" """)
+
+                if st.button("✨ Criar Novos Anúncios"):
+                    st.session_state.marketing_ads_result = None
+                    st.rerun()
 
         # --- 5.2: Max Construtor - Página de Venda ---
     def exibir_max_construtor(self):
