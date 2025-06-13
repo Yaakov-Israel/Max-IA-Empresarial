@@ -355,7 +355,7 @@ class MaxAgente:
                         - Um **'Público Semelhante'** aos seus melhores clientes cadastrados na sua Central do Cliente 360°.
                         """)
 
-                # --- Aba 3: Criar Anúncio Rápido ---
+                       # --- Aba 3: Criar Anúncio Rápido ---
         with tab_ads:
             # Se não houver um resultado sendo exibido, mostra o formulário de criação
             if not st.session_state.get('marketing_ads_result'):
@@ -401,12 +401,12 @@ class MaxAgente:
                     st.caption(result['ad2_desc'])
                 
                 st.markdown("---")
-                st.warning(f"**Otimização Contínua do Max (após 3 dias):** \"{result['optimization_tip']}\"")
+                # CORREÇÃO DA SINTAXE: Usando aspas triplas para segurança
+                st.warning(f"""**Otimização Contínua do Max (após 3 dias):** "{result['optimization_tip']}" """)
 
                 if st.button("✨ Criar Novos Anúncios"):
                     st.session_state.marketing_ads_result = None
                     st.rerun()
-50% mais cliques. Recomendo pausar os outros. Você aprova?\"")
 
         # --- 5.2: Max Construtor - Página de Venda ---
     def exibir_max_construtor(self):
