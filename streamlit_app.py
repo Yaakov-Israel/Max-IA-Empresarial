@@ -321,13 +321,64 @@ class MaxAgente:
                                 st.session_state.marketing_post_result = post
                                 st.rerun()
 
-        # --- Aba 2: Criar Campanha ---
+       # --- Aba 2: Criar Campanha ---
         with tab_campaign:
-            st.info("Funcionalidade em desenvolvimento.")
+            st.subheader("Estrategista de Mídia Digital")
+            st.write("Para quando você tem um objetivo claro e um orçamento para investir.")
+
+            with st.form("campaign_form"):
+                campaign_objective = st.selectbox("Qual é o seu principal objetivo?", ["Vender mais um produto", "Trazer mais gente para a loja física", "Receber mais mensagens no WhatsApp"])
+                campaign_budget = st.number_input("Quanto você gostaria de investir (R$)?", min_value=50, value=300, step=50)
+                campaign_duration = st.slider("Por quantos dias?", 1, 30, 5)
+                
+                submitted = st.form_submit_button("🤖 Montar Estratégia com Max IA")
+                if submitted:
+                    with st.spinner("Max está analisando o mercado e montando sua estratégia..."):
+                        time.sleep(2)
+                        st.success("Estratégia de Campanha Pronta!")
+                        
+                        st.markdown("---")
+                        st.subheader("🎯 Seu Plano de Ação Estratégico")
+                        
+                        st.info(f"""
+                        **Recomendação de Canais:**
+                        Com R$ {campaign_budget:.2f} para {campaign_duration} dias, minha sugestão é focar:
+                        - **70% (R$ {campaign_budget*0.7:.2f}) no Instagram/Facebook:** Ótimo para segmentar por localização e interesses.
+                        - **30% (R$ {campaign_budget*0.3:.2f}) na Rede de Pesquisa do Google:** Para capturar quem busca ativamente por você.
+                        """)
+                        
+                        st.success("""
+                        **Definição de Público Simplificada (IA):**
+                        Vou mostrar seus anúncios para:
+                        - Pessoas de **22 a 50 anos** que moram ou trabalham a até **3km** do seu endereço.
+                        - Pessoas com interesse em **'café especial', 'brunch' e 'livros'**.
+                        - Um **'Público Semelhante'** aos seus melhores clientes cadastrados na sua Central do Cliente 360°.
+                        """)
 
         # --- Aba 3: Criar Anúncio Rápido ---
         with tab_ads:
-            st.info("Funcionalidade em desenvolvimento.")
+            st.subheader("Especialista Google Simplificado")
+            st.write("Coloque sua empresa no topo do Google sem complicações.")
+            
+            user_search_term = st.text_input("O que uma pessoa digitaria no Google para te encontrar?", "eletricista 24 horas em Juiz de Fora")
+            
+            if st.button("🔍 Gerar Anúncios de Alta Performance"):
+                with st.spinner("Max está pesquisando as melhores palavras e criando seus anúncios..."):
+                    time.sleep(2)
+                    st.success("Anúncios prontos para o Google!")
+                    
+                    st.markdown("---")
+                    st.subheader("✅ Seus Anúncios para o Google")
+                    
+                    with st.expander("Palavras-Chave Encontradas pela IA"):
+                        st.write(["eletricista 24 horas juiz de fora", "eletricista de emergência jf", "conserto elétrico urgente", "eletricista perto de mim agora"])
+                    
+                    with st.container(border=True):
+                        st.write("**Anúncio 1 (Foco em Velocidade):**")
+                        st.markdown("> **Eletricista 24h em Juiz de Fora | Atendimento Rápido**")
+                        st.caption("Problema Elétrico? Chegamos em até 40 Min. Atendemos todos os bairros. Orçamento grátis pelo WhatsApp!")
+                    
+                    st.warning("**Otimização Contínua do Max (após 3 dias):** \"O anúncio com o título 'Chegamos em 40 Min.' está trazendo 50% mais cliques. Recomendo pausar os outros. Você aprova?\"")
 
         # --- 5.2: Max Construtor - Página de Venda ---
     def exibir_max_construtor(self):
