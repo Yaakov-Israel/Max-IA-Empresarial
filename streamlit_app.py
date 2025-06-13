@@ -405,8 +405,13 @@ class MaxAgente:
                 st.warning(f"""**Otimização Contínua do Max (após 3 dias):** "{result['optimization_tip']}" """)
 
                 if st.button("✨ Criar Novos Anúncios"):
-                    st.session_state.marketing_ads_result = None
-                    st.rerun()
+    # Adiciona o anúncio atual ao início do histórico
+    st.session_state.marketing_ads_history.insert(0, st.session_state.marketing_ads_result)
+    # Mantém o histórico com no máximo 5 itens
+    st.session_state.marketing_ads_history = st.session_state.marketing_ads_history[:5]
+    # Limpa o resultado atual para mostrar o formulário novamente
+    st.session_state.marketing_ads_result = None
+    st.rerun()
 
         # --- 5.2: Max Construtor - Página de Venda ---
     def exibir_max_construtor(self):
