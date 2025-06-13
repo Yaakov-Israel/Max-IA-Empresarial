@@ -23,29 +23,13 @@ import plotly.graph_objects as go
 ASSETS_DIR = "assets"
 
 def get_asset_path(asset_name):
-    """Constrói o caminho para um asset dentro das pastas 'assets' ou 'fonts' de forma segura."""
+    """Constrói o caminho para um asset dentro da pasta 'assets' de forma segura."""
+    # O PWD (Print Working Directory) garante que o caminho é relativo ao local do script.
     try:
-        base_dir = os.path.dirname(os.path.abspath(__file__)) if '__file__' in locals() else os.getcwd()
-
- # Tenta encontrar na pasta 'assets'
- asset_path = os.path.join(base_dir, ASSETS_DIR, asset_name)
- if os.path.exists(asset_path):
- return asset_path
-
- # Tenta encontrar na pasta 'fonts'
- font_path = os.path.join(base_dir, "fonts", asset_name)
- if os.path.exists(font_path):
- return font_path
-
+        return os.path.join(os.path.dirname(os.path.abspath(__file__)), ASSETS_DIR, asset_name)
     except NameError:
- # Fallback para ambientes onde __file__ não está definido (como alguns notebooks)
-        asset_path_fallback = os.path.join(ASSETS_DIR, asset_name)
-        if os.path.exists(asset_path_fallback): return asset_path_fallback
-        font_path_fallback = os.path.join("fonts", asset_name)
-        if os.path.exists(font_path_fallback): return font_path_fallback
-
- # Se não encontrou em nenhuma pasta
-    raise FileNotFoundError(f"Asset '{asset_name}' not found in '{ASSETS_DIR}' or 'fonts' directories.")
+         # Fallback para ambientes onde __file__ não está definido (como alguns notebooks)
+        return os.path.join(ASSETS_DIR, asset_name)
 
 
 # Tenta carregar o ícone da página, com fallback
