@@ -36,7 +36,7 @@ def get_asset_path(asset_name):
     if os.path.exists(font_path):
         return font_path
 
-    except NameError:
+        except NameError:
          # Fallback para ambientes onde __file__ não está definido (como alguns notebooks)
         asset_path_fallback = os.path.join(ASSETS_DIR, asset_name)
         if os.path.exists(asset_path_fallback): return asset_path_fallback
